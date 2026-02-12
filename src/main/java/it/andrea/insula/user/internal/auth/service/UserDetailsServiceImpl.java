@@ -1,4 +1,4 @@
-package it.andrea.insula.user.internal.security;
+package it.andrea.insula.user.internal.auth.service;
 
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;

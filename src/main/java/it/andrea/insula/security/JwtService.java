@@ -18,8 +18,6 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // IMPORTANTE: Metti una chiave segreta lunga e complessa nel tuo application.yml
-    // es: application.security.jwt.secret-key=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
