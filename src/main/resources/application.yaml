@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: insula
+  datasource:
+    url: jdbc:postgresql://localhost:5433/insula_db
+    username: insula_user
+    password: insula_password
+    driver-class-name: org.postgresql.Driver
+  # --- CONFIGURAZIONE JPA / HIBERNATE ---
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+# --- CONFIGURAZIONE CUSTOM PER LA TUA APP ---
+application:
+  security:
+    jwt:
+      # Chiave segreta a 256-bit (32 byte) minimo per HS256.
+      # Questa è una chiave di esempio generata randomicamente.
+      # In produzione usa una variabile d'ambiente!
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      # Durata token accesso: 1 giorno (in millisecondi)
+      expiration: 86400000
+      # Durata refresh token: 7 giorni (in millisecondi)
+      refresh-token:
+        expiration: 604800000
+
+# --- LOGGING ---
+logging:
+  level:
+    root: INFO
+    it.andrea.insula: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.security: INFO
+
+# --- SWAGGER / OPENAPI ---
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
