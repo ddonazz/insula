@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -85,4 +87,12 @@ public class UserController {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Ottieni i dati dell'utente attualmente loggato (whoami)")
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> whoami(@AuthenticationPrincipal UserDetails userDetails) {
+        UserResponseDto userDto = userService.getByUsername(userDetails.getUsername());
+        return ResponseEntity.ok(userDto);
+    }
+
 }

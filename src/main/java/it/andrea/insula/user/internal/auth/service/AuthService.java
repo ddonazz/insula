@@ -67,6 +67,12 @@ public class AuthService {
         return new AuthResponse(newAccessToken, request.refreshToken());
     }
 
+    @Transactional
+    public void logout(RefreshTokenRequest request) {
+        refreshTokenRepository.findByToken(request.refreshToken())
+                .ifPresent(refreshTokenRepository::delete);
+    }
+
     private String createRefreshToken(User user) {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
@@ -75,4 +81,5 @@ public class AuthService {
 
         return refreshTokenRepository.save(refreshToken).getToken();
     }
+
 }

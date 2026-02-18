@@ -84,18 +84,10 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, publicId));
     }
 
-    public List<UserResponseDto> getAll() {
-        return userRepository.findAll().stream()
-                .map(responseMapper)
-                .collect(Collectors.toList());
-    }
-
     public PageResponse<UserResponseDto> getAll(Pageable pageable) {
-        Page<User> usersPage = userRepository.findAll(pageable);
-
-        Page<UserResponseDto> dtoPage = usersPage.map(responseMapper);
-
-        return PageResponse.fromPage(dtoPage);
+        return PageResponse.fromPage(userRepository.findAll(pageable)
+                .map(responseMapper)
+        );
     }
 
     @Transactional
@@ -106,12 +98,23 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    public UserResponseDto getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(responseMapper)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, username));
+    }
+
     private Set<Role> fetchRolesByIds(Set<Long> roleIds) {
         List<Role> roles = roleRepository.findAllById(roleIds);
 
         if (roles.size() != roleIds.size()) {
-            Set<Long> foundIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
-            List<Long> missingIds = roleIds.stream().filter(id -> !foundIds.contains(id)).toList();
+            Set<Long> foundIds = roles.stream()
+                    .map(Role::getId)
+                    .collect(Collectors.toSet());
+
+            List<Long> missingIds = roleIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
 
             throw new ResourceNotFoundException(UserErrorCodes.ROLE_NOT_FOUND, missingIds);
         }
