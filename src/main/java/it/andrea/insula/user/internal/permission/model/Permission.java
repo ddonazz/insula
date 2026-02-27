@@ -27,12 +27,16 @@ public class Permission {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private String domain;
+
     @ManyToMany(mappedBy = "permissions")
     private Set<Role> roles;
 
     public Permission(PermissionAuthority permissionAuthority) {
         this.authority = permissionAuthority.toString();
         this.description = permissionAuthority.getDescription();
+        this.domain = permissionAuthority.getDomain();
     }
 
     @Override

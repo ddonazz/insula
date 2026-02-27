@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public class User extends BaseEntity {
     private Long id;
 
     @UuidGenerator
-    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
+    @Column(nullable = false, unique = true, updatable = false)
     private UUID publicId;
 
     @Column(unique = true, nullable = false)
@@ -36,11 +37,12 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean enabled = true;
+    private UserStatus status = UserStatus.ACTIVE;
 
-    @Column(nullable = false)
-    private boolean accountNonLocked = true;
+    @Column()
+    private Instant deletedAt;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -49,4 +51,29 @@ public class User extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+
+    public void delete() {
+        this.status = UserStatus.DELETED;
+        this.deletedAt = Instant.now();
+    }
+
+    @Transient
+    public boolean isEnabled() {
+        return status != UserStatus.PENDING && status != UserStatus.SUSPENDED && status != UserStatus.DELETED;
+    }
+
+    @Transient
+    public boolean isAccountNonLocked() {
+        return status != UserStatus.LOCKED && status != UserStatus.DELETED;
+    }
+
+    @Transient
+    public boolean isAccountNonExpired() {
+        return status != UserStatus.DELETED;
+    }
+
+    @Transient
+    public boolean isCredentialsNonExpired() {
+        return status != UserStatus.DELETED;
+    }
 }

@@ -11,10 +11,10 @@ import it.andrea.insula.user.internal.user.model.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +41,7 @@ public class AuthService {
         );
 
         User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + request.username()));
+                .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String accessToken = jwtService.generateToken(userDetails);
@@ -53,11 +53,11 @@ public class AuthService {
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
-                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
 
         if (refreshToken.isExpired()) {
             refreshTokenRepository.delete(refreshToken);
-            throw new IllegalArgumentException("Refresh token expired. Please login again.");
+            throw new BadCredentialsException("Refresh token expired");
         }
 
         User user = refreshToken.getUser();
@@ -69,8 +69,7 @@ public class AuthService {
 
     @Transactional
     public void logout(RefreshTokenRequest request) {
-        refreshTokenRepository.findByToken(request.refreshToken())
-                .ifPresent(refreshTokenRepository::delete);
+        refreshTokenRepository.deleteByToken(request.refreshToken());
     }
 
     private String createRefreshToken(User user) {

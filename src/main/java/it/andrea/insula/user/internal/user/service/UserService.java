@@ -6,6 +6,8 @@ import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
 import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
+import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
+import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
 import it.andrea.insula.user.internal.user.dto.request.UserUpdateDto;
 import it.andrea.insula.user.internal.user.dto.response.UserResponseDto;
 import it.andrea.insula.user.internal.user.exception.UserErrorCodes;
@@ -13,9 +15,11 @@ import it.andrea.insula.user.internal.user.mapper.UserCreateDtoToUserMapper;
 import it.andrea.insula.user.internal.user.mapper.UserToUserResponseDtoMapper;
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
+import it.andrea.insula.user.internal.user.model.UserStatus;
+import it.andrea.insula.user.internal.user.model.UserSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,13 +67,47 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
 
-        if (dto.roles() != null && !dto.roles().isEmpty()) {
+        if (dto.username() != null && !dto.username().equals(user.getUsername())) {
+            if (userRepository.existsByUsernameAndIdNot(dto.username(), id)) {
+                throw new ResourceInUseException(UserErrorCodes.USERNAME_ALREADY_EXISTS, dto.username());
+            }
+            user.setUsername(dto.username());
+        }
+
+        if (dto.email() != null && !dto.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmailAndIdNot(dto.email(), id)) {
+                throw new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, dto.email());
+            }
+            user.setEmail(dto.email());
+        }
+
+        if (dto.status() != null) {
+            user.setStatus(dto.status());
+        }
+
+        if (dto.roles() != null) {
             Set<Role> roles = fetchRolesByIds(dto.roles());
             user.setRoles(roles);
         }
 
         User updatedUser = userRepository.save(user);
         return responseMapper.apply(updatedUser);
+    }
+
+    @Transactional
+    public void activateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void suspendUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
+        user.setStatus(UserStatus.SUSPENDED);
+        userRepository.save(user);
     }
 
     public UserResponseDto getById(Long id) {
@@ -84,24 +122,48 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, publicId));
     }
 
-    public PageResponse<UserResponseDto> getAll(Pageable pageable) {
-        return PageResponse.fromPage(userRepository.findAll(pageable)
+    public PageResponse<UserResponseDto> getAll(UserSearchCriteria criteria, Pageable pageable) {
+        Specification<User> spec = UserSpecification.withCriteria(criteria);
+        return PageResponse.fromPage(userRepository.findAll(spec, pageable)
                 .map(responseMapper)
         );
     }
 
+    public List<UserResponseDto> findAll(UserSearchCriteria criteria) {
+        Specification<User> spec = UserSpecification.withCriteria(criteria);
+        return userRepository.findAll(spec).stream()
+                .map(responseMapper)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id);
-        }
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
+        user.delete();
+        userRepository.save(user);
     }
 
     public UserResponseDto getByUsername(String username) {
         return userRepository.findByUsername(username)
                 .map(responseMapper)
                 .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, username));
+    }
+
+    @Transactional
+    public UserResponseDto updateProfile(String username, UserProfileUpdateDto dto) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, username));
+
+        if (dto.email() != null && !dto.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmailAndIdNot(dto.email(), user.getId())) {
+                throw new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, dto.email());
+            }
+            user.setEmail(dto.email());
+        }
+
+        User updatedUser = userRepository.save(user);
+        return responseMapper.apply(updatedUser);
     }
 
     private Set<Role> fetchRolesByIds(Set<Long> roleIds) {

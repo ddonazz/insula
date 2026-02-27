@@ -32,9 +32,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 user.getUsername(),
                 user.getPassword(),
                 user.isEnabled(),
+                user.isAccountNonExpired(),
+                user.isCredentialsNonExpired(),
                 user.isAccountNonLocked(),
-                true,
-                true,
                 mapRolesToAuthorities(user)
         );
     }

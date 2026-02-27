@@ -2,6 +2,7 @@ package it.andrea.insula.user.internal.user.mapper;
 
 import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
 import it.andrea.insula.user.internal.user.model.User;
+import it.andrea.insula.user.internal.user.model.UserStatus;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ public class UserCreateDtoToUserMapper implements Function<UserCreateDto, User> 
         User user = new User();
         user.setUsername(dto.username());
         user.setEmail(dto.email());
+        user.setStatus(UserStatus.ACTIVE);
 
         return user;
     }

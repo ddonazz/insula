@@ -13,7 +13,8 @@ public enum CommonErrorCodes implements ErrorDefinition {
 
     // --- Security Errors (991xx) ---
     UNAUTHENTICATED(99100, "security.unauthenticated", "Authentication is required to access this resource."),
-    ACCESS_DENIED(99101, "security.access.denied", "Access Denied. You do not have the necessary permissions.");
+    ACCESS_DENIED(99101, "security.access.denied", "Access Denied. You do not have the necessary permissions."),
+    BAD_CREDENTIALS(99102, "user.invalid.credentials", "Invalid username or password."); //
 
     private final int code;
     private final String errorCode;

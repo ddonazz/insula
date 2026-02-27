@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.user.internal.role.dto.request.RoleCreateDto;
+import it.andrea.insula.user.internal.role.dto.request.RoleSearchCriteria;
 import it.andrea.insula.user.internal.role.dto.request.RoleUpdateDto;
 import it.andrea.insula.user.internal.role.dto.response.RoleResponseDto;
 import it.andrea.insula.user.internal.role.service.RoleService;
@@ -18,11 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/roles")
 @RequiredArgsConstructor
-@Tag(name = "Role Management", description = "APIs for managing user roles")
+@Tag(name = "Role Management", description = "APIs for managing roles")
 public class RoleController {
 
     private final RoleService roleService;
@@ -30,51 +32,56 @@ public class RoleController {
     @Operation(summary = "Get a role by ID")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('role:read')")
-    public ResponseEntity<RoleResponseDto> getRole(@PathVariable Long id) {
-        RoleResponseDto response = roleService.getRole(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<RoleResponseDto> getById(@PathVariable Long id) {
+        RoleResponseDto roleDto = roleService.getById(id);
+        return ResponseEntity.ok(roleDto);
     }
 
     @Operation(summary = "Get all roles")
     @GetMapping
     @PreAuthorize("hasAuthority('role:read')")
-    public ResponseEntity<PageResponse<RoleResponseDto>> getRoles(
-            @ParameterObject
-            @PageableDefault(size = 20, sort = "name") Pageable pageable
+    public ResponseEntity<PageResponse<RoleResponseDto>> getAll(
+            @ParameterObject RoleSearchCriteria criteria,
+            @ParameterObject @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        PageResponse<RoleResponseDto> response = roleService.getRoles(pageable);
+        PageResponse<RoleResponseDto> response = roleService.getAll(criteria, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Get all roles as a list")
+    @GetMapping("/list")
+    @PreAuthorize("hasAuthority('role:read')")
+    public ResponseEntity<List<RoleResponseDto>> getList(@ParameterObject RoleSearchCriteria criteria) {
+        List<RoleResponseDto> response = roleService.findAll(criteria);
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Create a new role")
     @PostMapping
     @PreAuthorize("hasAuthority('role:create')")
-    public ResponseEntity<RoleResponseDto> createRole(@Validated @RequestBody RoleCreateDto request) {
-        RoleResponseDto response = roleService.createRole(request);
+    public ResponseEntity<RoleResponseDto> create(@Validated @RequestBody RoleCreateDto dto) {
+        RoleResponseDto createdRole = roleService.createRole(dto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(response.id())
+                .buildAndExpand(createdRole.id())
                 .toUri();
 
-        return ResponseEntity.created(location).body(response);
+        return ResponseEntity.created(location).body(createdRole);
     }
 
     @Operation(summary = "Update an existing role")
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('role:update')")
-    public ResponseEntity<RoleResponseDto> updateRole(
-            @PathVariable Long id,
-            @Validated @RequestBody RoleUpdateDto roleUpdateDto
-    ) {
-        RoleResponseDto updateRole = roleService.updateRole(id, roleUpdateDto);
-        return ResponseEntity.ok(updateRole);
+    public ResponseEntity<RoleResponseDto> update(@PathVariable Long id, @Validated @RequestBody RoleUpdateDto dto) {
+        RoleResponseDto updatedRole = roleService.updateRole(id, dto);
+        return ResponseEntity.ok(updatedRole);
     }
 
     @Operation(summary = "Delete a role")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('role:delete')")
-    public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();
     }

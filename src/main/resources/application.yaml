@@ -9,11 +9,10 @@ spring:
   # --- CONFIGURAZIONE JPA / HIBERNATE ---
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
 # --- CONFIGURAZIONE ---
@@ -35,7 +34,6 @@ logging:
   level:
     root: INFO
     it.andrea.insula: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
     org.springframework.security: INFO
 
 # --- SWAGGER / OPENAPI ---

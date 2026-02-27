@@ -14,7 +14,9 @@ public enum UserErrorCodes implements ErrorDefinition {
 
     ROLE_NOT_FOUND(10101, "role.not.found", "Role not found with the provided identifier."),
     ROLE_NAME_EXISTS(10102, "role.name.exists", "A role with this name already exists."),
-    ROLE_IN_USE(10103, "role.in.use", "Cannot delete role because it is assigned to one or more users.");
+    ROLE_IN_USE(10103, "role.in.use", "Cannot delete role because it is assigned to one or more users."),
+
+    PERMISSION_NOT_FOUND(10201, "permission.not.found", "Permission not found with the provided identifier.");
 
     private final int code;
     private final String errorCode;

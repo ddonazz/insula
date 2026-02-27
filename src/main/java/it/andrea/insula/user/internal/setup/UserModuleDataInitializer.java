@@ -7,6 +7,7 @@ import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
+import it.andrea.insula.user.internal.user.model.UserStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -111,8 +112,7 @@ public class UserModuleDataInitializer implements ApplicationRunner {
         admin.setUsername(ADMIN_USERNAME);
         admin.setEmail(ADMIN_EMAIL);
         admin.setPassword(passwordEncoder.encode(ADMIN_DEFAULT_PASSWORD));
-        admin.setEnabled(true);
-        admin.setAccountNonLocked(true);
+        admin.setStatus(UserStatus.ACTIVE);
 
         admin.setRoles(Collections.singleton(adminRole));
 
