@@ -8,6 +8,7 @@ import it.andrea.insula.agency.internal.dto.request.AgencyUpdateDto;
 import it.andrea.insula.agency.internal.dto.response.AgencyResponseDto;
 import it.andrea.insula.agency.internal.service.AgencyService;
 import it.andrea.insula.core.dto.PageResponse;
+import it.andrea.insula.security.PermissionAuthority;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public class AgencyController {
 
     @Operation(summary = "Get an agency by Public ID (UUID)")
     @GetMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('agency:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.AGENCY_READ + "')")
     public ResponseEntity<AgencyResponseDto> getByPublicId(@PathVariable UUID publicId) {
         AgencyResponseDto agency = agencyService.getByPublicId(publicId);
         return ResponseEntity.ok(agency);
@@ -40,7 +41,7 @@ public class AgencyController {
 
     @Operation(summary = "Get all agencies (paginated)")
     @GetMapping
-    @PreAuthorize("hasAuthority('agency:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.AGENCY_READ + "')")
     public ResponseEntity<PageResponse<AgencyResponseDto>> getAll(
             @ParameterObject AgencySearchCriteria criteria,
             @ParameterObject @PageableDefault(size = 20, sort = "name") Pageable pageable
@@ -51,7 +52,7 @@ public class AgencyController {
 
     @Operation(summary = "Get all agencies as a list")
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('agency:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.AGENCY_READ + "')")
     public ResponseEntity<List<AgencyResponseDto>> getList(@ParameterObject AgencySearchCriteria criteria) {
         List<AgencyResponseDto> response = agencyService.findAll(criteria);
         return ResponseEntity.ok(response);
@@ -59,7 +60,7 @@ public class AgencyController {
 
     @Operation(summary = "Create a new agency")
     @PostMapping
-    @PreAuthorize("hasAuthority('agency:create')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.AGENCY_CREATE + "')")
     public ResponseEntity<AgencyResponseDto> create(@Validated @RequestBody AgencyCreateDto dto) {
         AgencyResponseDto createdAgency = agencyService.create(dto);
 
@@ -73,7 +74,7 @@ public class AgencyController {
 
     @Operation(summary = "Update an existing agency")
     @PutMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('agency:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.AGENCY_UPDATE + "')")
     public ResponseEntity<AgencyResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody AgencyUpdateDto dto) {
         AgencyResponseDto updatedAgency = agencyService.update(publicId, dto);
         return ResponseEntity.ok(updatedAgency);
@@ -81,7 +82,7 @@ public class AgencyController {
 
     @Operation(summary = "Delete an agency")
     @DeleteMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('agency:delete')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.AGENCY_DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID publicId) {
         agencyService.delete(publicId);
         return ResponseEntity.noContent().build();

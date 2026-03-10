@@ -47,6 +47,8 @@ class UserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
+    private UserValidator userValidator;
+    @Mock
     private UserCreateDtoToUserMapper createMapper;
     @Mock
     private UserToUserResponseDtoMapper responseMapper;
@@ -90,8 +92,7 @@ class UserServiceTest {
         role.setName("USER");
         role.setPermissions(new HashSet<>());
 
-        when(userRepository.existsByUsername("testuser")).thenReturn(false);
-        when(userRepository.existsByEmail("test@test.com")).thenReturn(false);
+        doNothing().when(userValidator).validateCreate("testuser", "test@test.com");
         when(createMapper.apply(dto)).thenReturn(user);
         when(passwordEncoder.encode("password123")).thenReturn("encoded");
         when(roleRepository.findAllById(Set.of(1L))).thenReturn(List.of(role));
@@ -108,7 +109,9 @@ class UserServiceTest {
     @Test
     void create_shouldThrowWhenUsernameAlreadyExists() {
         UserCreateDto dto = new UserCreateDto("testuser", "test@test.com", "password123", Set.of(1L));
-        when(userRepository.existsByUsername("testuser")).thenReturn(true);
+
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.USERNAME_ALREADY_EXISTS, "testuser"))
+                .when(userValidator).validateCreate("testuser", "test@test.com");
 
         assertThatThrownBy(() -> userService.create(dto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -117,8 +120,9 @@ class UserServiceTest {
     @Test
     void create_shouldThrowWhenEmailAlreadyExists() {
         UserCreateDto dto = new UserCreateDto("testuser", "test@test.com", "password123", Set.of(1L));
-        when(userRepository.existsByUsername("testuser")).thenReturn(false);
-        when(userRepository.existsByEmail("test@test.com")).thenReturn(true);
+
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.EMAIL_ALREADY_EXISTS, "test@test.com"))
+                .when(userValidator).validateCreate("testuser", "test@test.com");
 
         assertThatThrownBy(() -> userService.create(dto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -127,8 +131,8 @@ class UserServiceTest {
     @Test
     void create_shouldThrowWhenRolesNotFound() {
         UserCreateDto dto = new UserCreateDto("testuser", "test@test.com", "password123", Set.of(1L, 99L));
-        when(userRepository.existsByUsername("testuser")).thenReturn(false);
-        when(userRepository.existsByEmail("test@test.com")).thenReturn(false);
+
+        doNothing().when(userValidator).validateCreate("testuser", "test@test.com");
         when(createMapper.apply(dto)).thenReturn(user);
         when(passwordEncoder.encode("password123")).thenReturn("encoded");
         Role role = new Role();
@@ -145,8 +149,7 @@ class UserServiceTest {
     void update_shouldUpdateUserSuccessfully() {
         UserUpdateDto dto = new UserUpdateDto("newuser", "new@test.com", null, null);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.existsByUsernameAndIdNot("newuser", 1L)).thenReturn(false);
-        when(userRepository.existsByEmailAndIdNot("new@test.com", 1L)).thenReturn(false);
+        doNothing().when(userValidator).validateUpdate(1L, "newuser", "testuser", "new@test.com", "test@test.com");
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
@@ -170,7 +173,8 @@ class UserServiceTest {
     void update_shouldThrowWhenNewUsernameAlreadyTaken() {
         UserUpdateDto dto = new UserUpdateDto("taken", null, null, null);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.existsByUsernameAndIdNot("taken", 1L)).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.USERNAME_ALREADY_EXISTS, "taken"))
+                .when(userValidator).validateUpdate(1L, "taken", "testuser", null, "test@test.com");
 
         assertThatThrownBy(() -> userService.update(1L, dto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -180,7 +184,8 @@ class UserServiceTest {
     void update_shouldThrowWhenNewEmailAlreadyTaken() {
         UserUpdateDto dto = new UserUpdateDto(null, "taken@test.com", null, null);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.existsByEmailAndIdNot("taken@test.com", 1L)).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.EMAIL_ALREADY_EXISTS, "taken@test.com"))
+                .when(userValidator).validateUpdate(1L, null, "testuser", "taken@test.com", "test@test.com");
 
         assertThatThrownBy(() -> userService.update(1L, dto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -190,6 +195,7 @@ class UserServiceTest {
     void update_shouldUpdateStatus() {
         UserUpdateDto dto = new UserUpdateDto(null, null, UserStatus.SUSPENDED, null);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        doNothing().when(userValidator).validateUpdate(1L, null, "testuser", null, "test@test.com");
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
@@ -202,12 +208,13 @@ class UserServiceTest {
     void update_shouldSkipWhenUsernameNotChanged() {
         UserUpdateDto dto = new UserUpdateDto("testuser", null, null, null);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        doNothing().when(userValidator).validateUpdate(1L, "testuser", "testuser", null, "test@test.com");
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
         userService.update(1L, dto);
 
-        verify(userRepository, never()).existsByUsernameAndIdNot(any(), any());
+        verify(userValidator).validateUpdate(1L, "testuser", "testuser", null, "test@test.com");
     }
 
     // === READ ===
@@ -317,7 +324,7 @@ class UserServiceTest {
     void updateProfile_shouldUpdateEmail() {
         UserProfileUpdateDto dto = new UserProfileUpdateDto("newemail@test.com");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
-        when(userRepository.existsByEmailAndIdNot("newemail@test.com", 1L)).thenReturn(false);
+        doNothing().when(userValidator).validateEmailUpdate(1L, "newemail@test.com", "test@test.com");
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
@@ -331,7 +338,8 @@ class UserServiceTest {
     void updateProfile_shouldThrowWhenEmailTaken() {
         UserProfileUpdateDto dto = new UserProfileUpdateDto("taken@test.com");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
-        when(userRepository.existsByEmailAndIdNot("taken@test.com", 1L)).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.EMAIL_ALREADY_EXISTS, "taken@test.com"))
+                .when(userValidator).validateEmailUpdate(1L, "taken@test.com", "test@test.com");
 
         assertThatThrownBy(() -> userService.updateProfile("testuser", dto))
                 .isInstanceOf(ResourceInUseException.class);

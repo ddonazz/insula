@@ -1,6 +1,5 @@
 package it.andrea.insula.user.internal.user.model;
 
-import it.andrea.insula.core.model.BaseEntity;
 import it.andrea.insula.core.model.TenantAwareBaseEntity;
 import it.andrea.insula.user.internal.role.model.Role;
 import jakarta.persistence.*;

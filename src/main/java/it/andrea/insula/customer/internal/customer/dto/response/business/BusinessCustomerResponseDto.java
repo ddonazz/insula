@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.dto.response.business;
 
-import it.andrea.insula.customer.internal.address.dto.respose.AddressResponseDto;
+import it.andrea.insula.customer.internal.address.dto.respose.CustomerAddressResponseDto;
 import it.andrea.insula.customer.internal.customer.model.CustomerType;
 import lombok.Builder;
 
@@ -16,9 +16,9 @@ public record BusinessCustomerResponseDto(
         String companyName,
         String vatNumber,
         String fiscalCode,
-        AddressResponseDto legalAddress,
-        AddressResponseDto billingAddress,
-        Set<AddressResponseDto> operationalAddresses,
+        CustomerAddressResponseDto legalAddress,
+        CustomerAddressResponseDto billingAddress,
+        Set<CustomerAddressResponseDto> operationalAddresses,
         String sdiCode,
         String pecEmail,
         Set<CustomerContactResponseDto> contacts

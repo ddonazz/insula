@@ -1,8 +1,7 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
-import it.andrea.insula.customer.internal.address.dto.request.AddressCreateDto;
-import it.andrea.insula.customer.internal.address.mapper.AddressCreateDtoToAddressMapper;
-import it.andrea.insula.customer.internal.address.model.Address;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
+import it.andrea.insula.customer.internal.address.mapper.CustomerAddressCreateMapper;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerCreateDto;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomer;
 import org.junit.jupiter.api.Test;
@@ -13,12 +12,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class IndividualCustomerCreateMapperTest {
 
-    private final AddressCreateDtoToAddressMapper addressMapper = new AddressCreateDtoToAddressMapper();
+    private final CustomerAddressCreateMapper addressMapper = new CustomerAddressCreateMapper();
     private final IndividualCustomerCreateMapper mapper = new IndividualCustomerCreateMapper(addressMapper);
 
     @Test
     void apply_shouldMapAllFields() {
-        AddressCreateDto address = new AddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
+        CustomerAddressCreateDto address = new CustomerAddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
         IndividualCustomerCreateDto dto = new IndividualCustomerCreateDto(
                 "mario@rossi.it", "+39123456", "Mario", "Rossi",
                 "RSSMRA80A01H501Z", LocalDate.of(1980, 1, 1), "Roma", "Italiana", address

@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.model;
 
-import it.andrea.insula.customer.internal.address.model.Address;
+import it.andrea.insula.customer.internal.address.model.CustomerAddress;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +34,6 @@ public class IndividualCustomer extends Customer {
 
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "billing_address_id")
-    private Address billingAddress;
+    private CustomerAddress billingAddress;
 
 }

@@ -1,7 +1,6 @@
 package it.andrea.insula.user.internal.role.service;
 
 import it.andrea.insula.core.dto.PageResponse;
-import it.andrea.insula.core.exception.ResourceInUseException;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.user.internal.permission.model.Permission;
 import it.andrea.insula.user.internal.permission.model.PermissionRepository;
@@ -34,6 +33,7 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+    private final RoleValidator roleValidator;
 
     private final RoleToRoleResponseDtoMapper roleToRoleResponseDtoMapper;
     private final RoleCreateDtoToRoleMapper roleCreateDtoToRoleMapper;
@@ -63,9 +63,7 @@ public class RoleService {
 
     @Transactional
     public RoleResponseDto createRole(RoleCreateDto request) {
-        if (roleRepository.existsByName(request.name())) {
-            throw new ResourceInUseException(UserErrorCodes.ROLE_NAME_EXISTS, request.name());
-        }
+        roleValidator.validateCreate(request.name());
 
         Role role = roleCreateDtoToRoleMapper.apply(request);
 
@@ -80,10 +78,9 @@ public class RoleService {
     public RoleResponseDto updateRole(Long id, RoleUpdateDto request) {
         Role role = retrieveRole(id);
 
-        if (request.name() != null && !request.name().equals(role.getName())) {
-            if (roleRepository.existsByNameAndIdNot(request.name(), id)) {
-                throw new ResourceInUseException(UserErrorCodes.ROLE_NAME_EXISTS, request.name());
-            }
+        roleValidator.validateUpdate(id, request.name(), role.getName());
+
+        if (request.name() != null) {
             role.setName(request.name());
         }
 
@@ -103,11 +100,7 @@ public class RoleService {
     @Transactional
     public void deleteRole(Long id) {
         Role role = retrieveRole(id);
-
-        if (!role.getUsers().isEmpty()) {
-            throw new ResourceInUseException(UserErrorCodes.ROLE_IN_USE, id);
-        }
-
+        roleValidator.validateDelete(role);
         roleRepository.delete(role);
     }
 

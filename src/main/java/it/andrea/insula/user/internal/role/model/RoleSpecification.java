@@ -1,10 +1,9 @@
 package it.andrea.insula.user.internal.role.model;
 
 import it.andrea.insula.user.internal.role.dto.request.RoleSearchCriteria;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
-
-import jakarta.persistence.criteria.Predicate;
 
 public class RoleSpecification {
 

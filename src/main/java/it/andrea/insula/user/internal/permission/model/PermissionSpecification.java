@@ -1,10 +1,9 @@
 package it.andrea.insula.user.internal.permission.model;
 
 import it.andrea.insula.user.internal.permission.dto.request.PermissionSearchCriteria;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
-
-import jakarta.persistence.criteria.Predicate;
 
 public class PermissionSpecification {
 

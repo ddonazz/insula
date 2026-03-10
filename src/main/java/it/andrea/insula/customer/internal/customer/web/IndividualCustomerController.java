@@ -8,6 +8,7 @@ import it.andrea.insula.customer.internal.customer.dto.request.individual.Indivi
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.individual.IndividualCustomerResponseDto;
 import it.andrea.insula.customer.internal.customer.service.IndividualCustomerService;
+import it.andrea.insula.security.PermissionAuthority;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -32,14 +33,14 @@ public class IndividualCustomerController {
 
     @Operation(summary = "Get an individual customer by Public ID")
     @GetMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('customer:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_READ + "')")
     public ResponseEntity<IndividualCustomerResponseDto> getByPublicId(@PathVariable UUID publicId) {
         return ResponseEntity.ok(service.getByPublicId(publicId));
     }
 
     @Operation(summary = "Get all individual customers (paginated)")
     @GetMapping
-    @PreAuthorize("hasAuthority('customer:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_READ + "')")
     public ResponseEntity<PageResponse<IndividualCustomerResponseDto>> getAll(
             @ParameterObject CustomerFilters filters,
             @ParameterObject @PageableDefault(size = 20, sort = "lastName") Pageable pageable
@@ -49,14 +50,14 @@ public class IndividualCustomerController {
 
     @Operation(summary = "Get all individual customers as a list")
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('customer:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_READ + "')")
     public ResponseEntity<List<IndividualCustomerResponseDto>> getList(@ParameterObject CustomerFilters filters) {
         return ResponseEntity.ok(service.findAll(filters));
     }
 
     @Operation(summary = "Create a new individual customer")
     @PostMapping
-    @PreAuthorize("hasAuthority('customer:create')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_CREATE + "')")
     public ResponseEntity<IndividualCustomerResponseDto> create(@Validated @RequestBody IndividualCustomerCreateDto dto) {
         IndividualCustomerResponseDto created = service.create(dto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -68,17 +69,16 @@ public class IndividualCustomerController {
 
     @Operation(summary = "Update an existing individual customer")
     @PutMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('customer:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_UPDATE + "')")
     public ResponseEntity<IndividualCustomerResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody IndividualCustomerUpdateDto dto) {
         return ResponseEntity.ok(service.update(publicId, dto));
     }
 
     @Operation(summary = "Delete an individual customer")
     @DeleteMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('customer:delete')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID publicId) {
         service.delete(publicId);
         return ResponseEntity.noContent().build();
     }
 }
-

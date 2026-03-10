@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.dto.response.individual;
 
-import it.andrea.insula.customer.internal.address.dto.respose.AddressResponseDto;
+import it.andrea.insula.customer.internal.address.dto.respose.CustomerAddressResponseDto;
 import it.andrea.insula.customer.internal.customer.model.CustomerType;
 import lombok.Builder;
 
@@ -20,6 +20,6 @@ public record IndividualCustomerResponseDto(
         LocalDate birthDate,
         String birthPlace,
         String nationality,
-        AddressResponseDto billingAddress
+        CustomerAddressResponseDto billingAddress
 ) {
 }

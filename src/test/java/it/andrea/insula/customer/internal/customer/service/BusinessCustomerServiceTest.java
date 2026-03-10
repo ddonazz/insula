@@ -2,10 +2,9 @@ package it.andrea.insula.customer.internal.customer.service;
 
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
-import it.andrea.insula.customer.internal.address.dto.request.AddressCreateDto;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.CustomerFilters;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerCreateDto;
-import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.business.CustomerContactCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.business.BusinessCustomerResponseDto;
 import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerCreateMapper;
@@ -31,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BusinessCustomerServiceTest {
@@ -82,7 +82,7 @@ class BusinessCustomerServiceTest {
 
     @Test
     void create_shouldCreateSuccessfully() {
-        AddressCreateDto address = new AddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
+        CustomerAddressCreateDto address = new CustomerAddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
         BusinessCustomerCreateDto dto = new BusinessCustomerCreateDto(
                 "info@acme.it", null, "ACME Srl", "12345678901",
                 null, address, address, null, null

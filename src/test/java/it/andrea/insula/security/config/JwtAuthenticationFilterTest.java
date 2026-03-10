@@ -3,6 +3,7 @@ package it.andrea.insula.security.config;
 import io.jsonwebtoken.ExpiredJwtException;
 import it.andrea.insula.core.tenant.TenantContext;
 import it.andrea.insula.security.JwtService;
+import it.andrea.insula.security.PermissionAuthority;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.AfterEach;
@@ -95,7 +96,7 @@ class JwtAuthenticationFilterTest {
         UUID tenantId = UUID.randomUUID();
         request.addHeader("Authorization", "Bearer " + token);
 
-        UserDetails userDetails = new User("admin", "pass", List.of(new SimpleGrantedAuthority("user:read")));
+        UserDetails userDetails = new User("admin", "pass", List.of(new SimpleGrantedAuthority(PermissionAuthority.Constants.USER_READ)));
 
         when(jwtService.extractUsername(token)).thenReturn("admin");
         when(jwtService.isTokenValid(token, userDetails)).thenReturn(true);
@@ -127,7 +128,7 @@ class JwtAuthenticationFilterTest {
         request.addHeader("Authorization", "Bearer " + token);
         request.addHeader("X-Tenant-ID", impersonatedTenantId.toString());
 
-        UserDetails userDetails = new User("superadmin", "pass", List.of(new SimpleGrantedAuthority("admin:access")));
+        UserDetails userDetails = new User("superadmin", "pass", List.of(new SimpleGrantedAuthority(PermissionAuthority.Constants.ADMIN_ACCESS)));
 
         when(jwtService.extractUsername(token)).thenReturn("superadmin");
         when(jwtService.isTokenValid(token, userDetails)).thenReturn(true);
@@ -157,7 +158,7 @@ class JwtAuthenticationFilterTest {
         request.addHeader("X-Tenant-ID", impersonatedTenantId.toString());
 
         // Utente normale, NON ha admin:access
-        UserDetails userDetails = new User("user1", "pass", List.of(new SimpleGrantedAuthority("user:read")));
+        UserDetails userDetails = new User("user1", "pass", List.of(new SimpleGrantedAuthority(PermissionAuthority.Constants.USER_READ)));
 
         when(jwtService.extractUsername(token)).thenReturn("user1");
         when(jwtService.isTokenValid(token, userDetails)).thenReturn(true);
@@ -184,7 +185,7 @@ class JwtAuthenticationFilterTest {
         request.addHeader("Authorization", "Bearer " + token);
         request.addHeader("X-Tenant-ID", "not-a-valid-uuid");
 
-        UserDetails userDetails = new User("superadmin", "pass", List.of(new SimpleGrantedAuthority("admin:access")));
+        UserDetails userDetails = new User("superadmin", "pass", List.of(new SimpleGrantedAuthority(PermissionAuthority.Constants.ADMIN_ACCESS)));
 
         when(jwtService.extractUsername(token)).thenReturn("superadmin");
         when(jwtService.isTokenValid(token, userDetails)).thenReturn(true);

@@ -1,11 +1,11 @@
 package it.andrea.insula.user.internal.auth.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.user.internal.auth.dto.AuthResponse;
 import it.andrea.insula.user.internal.auth.dto.LoginRequest;
 import it.andrea.insula.user.internal.auth.dto.RefreshTokenRequest;
 import it.andrea.insula.user.internal.auth.service.AuthService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

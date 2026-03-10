@@ -5,6 +5,7 @@ import it.andrea.insula.agency.internal.dto.request.AgencySearchCriteria;
 import it.andrea.insula.agency.internal.dto.request.AgencyUpdateDto;
 import it.andrea.insula.agency.internal.dto.response.AgencyResponseDto;
 import it.andrea.insula.agency.internal.mapper.AgencyCreateDtoToAgencyMapper;
+import it.andrea.insula.agency.internal.mapper.AgencyPatchMapper;
 import it.andrea.insula.agency.internal.mapper.AgencyToAgencyResponseDtoMapper;
 import it.andrea.insula.agency.internal.model.Agency;
 import it.andrea.insula.agency.internal.model.AgencyRepository;
@@ -42,7 +43,13 @@ class AgencyServiceTest {
     private AgencyRepository agencyRepository;
 
     @Mock
+    private AgencyValidator agencyValidator;
+
+    @Mock
     private AgencyCreateDtoToAgencyMapper createMapper;
+
+    @Mock
+    private AgencyPatchMapper patchMapper;
 
     @Mock
     private AgencyToAgencyResponseDtoMapper responseMapper;
@@ -87,8 +94,7 @@ class AgencyServiceTest {
                 "pec@agency.com", "test@agency.com", null, null, null, null
         );
 
-        when(agencyRepository.existsByVatNumber("12345678901")).thenReturn(false);
-        when(agencyRepository.existsByPecEmail("pec@agency.com")).thenReturn(false);
+        doNothing().when(agencyValidator).validateCreate("12345678901", "pec@agency.com");
         when(createMapper.apply(createDto)).thenReturn(agency);
         when(agencyRepository.save(agency)).thenReturn(agency);
         when(responseMapper.apply(agency)).thenReturn(responseDto);
@@ -107,7 +113,8 @@ class AgencyServiceTest {
                 null, "test@agency.com", null, null, null, null
         );
 
-        when(agencyRepository.existsByVatNumber("12345678901")).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.agency.internal.exception.AgencyErrorCodes.VAT_NUMBER_ALREADY_EXISTS, "12345678901"))
+                .when(agencyValidator).validateCreate("12345678901", null);
 
         assertThatThrownBy(() -> agencyService.create(createDto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -120,8 +127,8 @@ class AgencyServiceTest {
                 "pec@agency.com", "test@agency.com", null, null, null, null
         );
 
-        when(agencyRepository.existsByVatNumber("12345678901")).thenReturn(false);
-        when(agencyRepository.existsByPecEmail("pec@agency.com")).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.agency.internal.exception.AgencyErrorCodes.PEC_EMAIL_ALREADY_EXISTS, "pec@agency.com"))
+                .when(agencyValidator).validateCreate("12345678901", "pec@agency.com");
 
         assertThatThrownBy(() -> agencyService.create(createDto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -184,6 +191,8 @@ class AgencyServiceTest {
         );
 
         when(agencyRepository.findByPublicId(publicId)).thenReturn(Optional.of(agency));
+        doNothing().when(agencyValidator).validateUpdate(1L, null, "12345678901", null, "pec@agency.com");
+        when(patchMapper.apply(updateDto, agency)).thenReturn(agency);
         when(agencyRepository.save(agency)).thenReturn(agency);
         when(responseMapper.apply(agency)).thenReturn(responseDto);
 
@@ -214,7 +223,8 @@ class AgencyServiceTest {
         );
 
         when(agencyRepository.findByPublicId(publicId)).thenReturn(Optional.of(agency));
-        when(agencyRepository.existsByVatNumberAndIdNot("99999999999", 1L)).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.agency.internal.exception.AgencyErrorCodes.VAT_NUMBER_ALREADY_EXISTS, "99999999999"))
+                .when(agencyValidator).validateUpdate(1L, "99999999999", "12345678901", null, "pec@agency.com");
 
         assertThatThrownBy(() -> agencyService.update(publicId, updateDto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -228,7 +238,8 @@ class AgencyServiceTest {
         );
 
         when(agencyRepository.findByPublicId(publicId)).thenReturn(Optional.of(agency));
-        when(agencyRepository.existsByPecEmailAndIdNot("other@pec.it", 1L)).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.agency.internal.exception.AgencyErrorCodes.PEC_EMAIL_ALREADY_EXISTS, "other@pec.it"))
+                .when(agencyValidator).validateUpdate(1L, null, "12345678901", "other@pec.it", "pec@agency.com");
 
         assertThatThrownBy(() -> agencyService.update(publicId, updateDto))
                 .isInstanceOf(ResourceInUseException.class);

@@ -9,6 +9,7 @@ import it.andrea.insula.customer.internal.customer.dto.request.business.Business
 import it.andrea.insula.customer.internal.customer.dto.request.business.CustomerContactCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.business.BusinessCustomerResponseDto;
 import it.andrea.insula.customer.internal.customer.service.BusinessCustomerService;
+import it.andrea.insula.security.PermissionAuthority;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -33,14 +34,14 @@ public class BusinessCustomerController {
 
     @Operation(summary = "Get a business customer by Public ID")
     @GetMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('customer:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_READ + "')")
     public ResponseEntity<BusinessCustomerResponseDto> getByPublicId(@PathVariable UUID publicId) {
         return ResponseEntity.ok(service.getByPublicId(publicId));
     }
 
     @Operation(summary = "Get all business customers (paginated)")
     @GetMapping
-    @PreAuthorize("hasAuthority('customer:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_READ + "')")
     public ResponseEntity<PageResponse<BusinessCustomerResponseDto>> getAll(
             @ParameterObject CustomerFilters filters,
             @ParameterObject @PageableDefault(size = 20, sort = "companyName") Pageable pageable
@@ -50,14 +51,14 @@ public class BusinessCustomerController {
 
     @Operation(summary = "Get all business customers as a list")
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('customer:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_READ + "')")
     public ResponseEntity<List<BusinessCustomerResponseDto>> getList(@ParameterObject CustomerFilters filters) {
         return ResponseEntity.ok(service.findAll(filters));
     }
 
     @Operation(summary = "Create a new business customer")
     @PostMapping
-    @PreAuthorize("hasAuthority('customer:create')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_CREATE + "')")
     public ResponseEntity<BusinessCustomerResponseDto> create(@Validated @RequestBody BusinessCustomerCreateDto dto) {
         BusinessCustomerResponseDto created = service.create(dto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -69,14 +70,14 @@ public class BusinessCustomerController {
 
     @Operation(summary = "Update an existing business customer")
     @PutMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('customer:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_UPDATE + "')")
     public ResponseEntity<BusinessCustomerResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody BusinessCustomerUpdateDto dto) {
         return ResponseEntity.ok(service.update(publicId, dto));
     }
 
     @Operation(summary = "Delete a business customer")
     @DeleteMapping("/{publicId}")
-    @PreAuthorize("hasAuthority('customer:delete')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID publicId) {
         service.delete(publicId);
         return ResponseEntity.noContent().build();
@@ -84,17 +85,16 @@ public class BusinessCustomerController {
 
     @Operation(summary = "Add a contact to a business customer")
     @PostMapping("/{publicId}/contacts")
-    @PreAuthorize("hasAuthority('customer:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_UPDATE + "')")
     public ResponseEntity<BusinessCustomerResponseDto> addContact(@PathVariable UUID publicId, @Validated @RequestBody CustomerContactCreateDto dto) {
         return ResponseEntity.ok(service.addContact(publicId, dto));
     }
 
     @Operation(summary = "Remove a contact from a business customer")
     @DeleteMapping("/{publicId}/contacts/{contactPublicId}")
-    @PreAuthorize("hasAuthority('customer:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_UPDATE + "')")
     public ResponseEntity<Void> removeContact(@PathVariable UUID publicId, @PathVariable UUID contactPublicId) {
         service.removeContact(publicId, contactPublicId);
         return ResponseEntity.noContent().build();
     }
 }
-

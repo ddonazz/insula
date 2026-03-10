@@ -1,10 +1,9 @@
 package it.andrea.insula.user.internal.user.model;
 
 import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
-
-import jakarta.persistence.criteria.Predicate;
 
 public class UserSpecification {
 

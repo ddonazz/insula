@@ -2,7 +2,7 @@ package it.andrea.insula.customer.internal.customer.service;
 
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
-import it.andrea.insula.customer.internal.address.dto.request.AddressCreateDto;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.CustomerFilters;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerUpdateDto;
@@ -34,7 +34,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IndividualCustomerServiceTest {
@@ -80,7 +81,7 @@ class IndividualCustomerServiceTest {
 
     @Test
     void create_shouldCreateSuccessfully() {
-        AddressCreateDto address = new AddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
+        CustomerAddressCreateDto address = new CustomerAddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
         IndividualCustomerCreateDto dto = new IndividualCustomerCreateDto(
                 "mario@rossi.it", null, "Mario", "Rossi", "RSSMRA80A01H501Z",
                 LocalDate.of(1980, 1, 1), "Roma", "Italiana", address

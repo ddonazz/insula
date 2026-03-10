@@ -3,6 +3,7 @@ package it.andrea.insula.user.internal.user.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
+import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
 import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
 import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
@@ -35,7 +36,7 @@ public class UserController {
 
     @Operation(summary = "Get a user by Internal ID")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('user:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_READ + "')")
     public ResponseEntity<UserResponseDto> getById(@PathVariable Long id) {
         UserResponseDto userDto = userService.getById(id);
         return ResponseEntity.ok(userDto);
@@ -43,7 +44,7 @@ public class UserController {
 
     @Operation(summary = "Get a user by Public ID (UUID)")
     @GetMapping("/public/{publicId}")
-    @PreAuthorize("hasAuthority('user:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_READ + "')")
     public ResponseEntity<UserResponseDto> getByPublicId(@PathVariable UUID publicId) {
         UserResponseDto userDto = userService.getByPublicId(publicId);
         return ResponseEntity.ok(userDto);
@@ -51,7 +52,7 @@ public class UserController {
 
     @Operation(summary = "Get all users")
     @GetMapping
-    @PreAuthorize("hasAuthority('user:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_READ + "')")
     public ResponseEntity<PageResponse<UserResponseDto>> getAll(
             @ParameterObject UserSearchCriteria criteria,
             @ParameterObject @PageableDefault(size = 20, sort = "username") Pageable pageable
@@ -62,7 +63,7 @@ public class UserController {
 
     @Operation(summary = "Get all users as a list")
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('user:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_READ + "')")
     public ResponseEntity<List<UserResponseDto>> getList(@ParameterObject UserSearchCriteria criteria) {
         List<UserResponseDto> response = userService.findAll(criteria);
         return ResponseEntity.ok(response);
@@ -70,7 +71,7 @@ public class UserController {
 
     @Operation(summary = "Create a new user")
     @PostMapping
-    @PreAuthorize("hasAuthority('user:create')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_CREATE + "')")
     public ResponseEntity<UserResponseDto> create(@Validated @RequestBody UserCreateDto dto) {
         UserResponseDto createdUser = userService.create(dto);
 
@@ -84,7 +85,7 @@ public class UserController {
 
     @Operation(summary = "Update an existing user")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('user:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_UPDATE + "')")
     public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @Validated @RequestBody UserUpdateDto dto) {
         UserResponseDto updatedUser = userService.update(id, dto);
         return ResponseEntity.ok(updatedUser);
@@ -92,7 +93,7 @@ public class UserController {
 
     @Operation(summary = "Activate a user")
     @PutMapping("/{id}/activate")
-    @PreAuthorize("hasAuthority('user:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_UPDATE + "')")
     public ResponseEntity<Void> activate(@PathVariable Long id) {
         userService.activateUser(id);
         return ResponseEntity.noContent().build();
@@ -100,7 +101,7 @@ public class UserController {
 
     @Operation(summary = "Suspend a user")
     @PutMapping("/{id}/suspend")
-    @PreAuthorize("hasAuthority('user:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_UPDATE + "')")
     public ResponseEntity<Void> suspend(@PathVariable Long id) {
         userService.suspendUser(id);
         return ResponseEntity.noContent().build();
@@ -108,7 +109,7 @@ public class UserController {
 
     @Operation(summary = "Delete a user")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('user:delete')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();

@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.dto.request.individual;
 
-import it.andrea.insula.customer.internal.address.dto.request.AddressCreateDto;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +32,6 @@ public record IndividualCustomerCreateDto(
 
         @NotNull
         @Valid
-        AddressCreateDto billingAddress
+        CustomerAddressCreateDto billingAddress
 ) {
 }

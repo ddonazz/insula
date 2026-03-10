@@ -7,6 +7,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
+import java.util.List;
 import java.util.Locale;
 
 @Configuration
@@ -16,6 +17,7 @@ public class I18nConfig {
     public LocaleResolver localeResolver() {
         AcceptHeaderLocaleResolver resolver = new AcceptHeaderLocaleResolver();
         resolver.setDefaultLocale(Locale.ITALIAN);
+        resolver.setSupportedLocales(List.of(Locale.ITALIAN, Locale.ENGLISH));
         return resolver;
     }
 
@@ -25,5 +27,4 @@ public class I18nConfig {
         bean.setValidationMessageSource(messageSource);
         return bean;
     }
-
 }

@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.model;
 
-import it.andrea.insula.customer.internal.address.model.Address;
+import it.andrea.insula.customer.internal.address.model.CustomerAddress;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,14 +27,14 @@ public class BusinessCustomer extends Customer {
 
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "legal_address_id")
-    private Address legalAddress;
+    private CustomerAddress legalAddress;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "billing_address_id")
-    private Address billingAddress;
+    private CustomerAddress billingAddress;
 
     @OneToMany(mappedBy = "businessCustomer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Address> operationalAddresses;
+    private Set<CustomerAddress> operationalAddresses;
 
     @Column(length = 7)
     private String sdiCode;

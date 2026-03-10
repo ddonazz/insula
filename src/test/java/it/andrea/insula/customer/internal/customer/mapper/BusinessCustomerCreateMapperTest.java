@@ -1,7 +1,7 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
-import it.andrea.insula.customer.internal.address.dto.request.AddressCreateDto;
-import it.andrea.insula.customer.internal.address.mapper.AddressCreateDtoToAddressMapper;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
+import it.andrea.insula.customer.internal.address.mapper.CustomerAddressCreateMapper;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerCreateDto;
 import it.andrea.insula.customer.internal.customer.model.BusinessCustomer;
 import org.junit.jupiter.api.Test;
@@ -10,12 +10,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BusinessCustomerCreateMapperTest {
 
-    private final AddressCreateDtoToAddressMapper addressMapper = new AddressCreateDtoToAddressMapper();
+    private final CustomerAddressCreateMapper addressMapper = new CustomerAddressCreateMapper();
     private final BusinessCustomerCreateMapper mapper = new BusinessCustomerCreateMapper(addressMapper);
 
     @Test
     void apply_shouldMapAllFields() {
-        AddressCreateDto address = new AddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
+        CustomerAddressCreateDto address = new CustomerAddressCreateDto("Via Roma", "1", "00100", "Roma", "RM", "IT");
         BusinessCustomerCreateDto dto = new BusinessCustomerCreateDto(
                 "info@acme.it", "+39123456", "ACME Srl", "12345678901",
                 "ACMEFISCAL123456", address, address, "ABC1234", "pec@acme.it"

@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
-import it.andrea.insula.customer.internal.address.mapper.AddressCreateDtoToAddressMapper;
+import it.andrea.insula.customer.internal.address.mapper.CustomerAddressCreateMapper;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerCreateDto;
 import it.andrea.insula.customer.internal.customer.model.BusinessCustomer;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class BusinessCustomerCreateMapper implements Function<BusinessCustomerCreateDto, BusinessCustomer> {
 
-    private final AddressCreateDtoToAddressMapper addressMapper;
+    private final CustomerAddressCreateMapper addressMapper;
 
     @Override
     public BusinessCustomer apply(BusinessCustomerCreateDto dto) {

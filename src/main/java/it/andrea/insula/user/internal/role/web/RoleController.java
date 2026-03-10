@@ -3,6 +3,7 @@ package it.andrea.insula.user.internal.role.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
+import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.role.dto.request.RoleCreateDto;
 import it.andrea.insula.user.internal.role.dto.request.RoleSearchCriteria;
 import it.andrea.insula.user.internal.role.dto.request.RoleUpdateDto;
@@ -31,7 +32,7 @@ public class RoleController {
 
     @Operation(summary = "Get a role by ID")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_READ + "')")
     public ResponseEntity<RoleResponseDto> getById(@PathVariable Long id) {
         RoleResponseDto roleDto = roleService.getById(id);
         return ResponseEntity.ok(roleDto);
@@ -39,7 +40,7 @@ public class RoleController {
 
     @Operation(summary = "Get all roles")
     @GetMapping
-    @PreAuthorize("hasAuthority('role:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_READ + "')")
     public ResponseEntity<PageResponse<RoleResponseDto>> getAll(
             @ParameterObject RoleSearchCriteria criteria,
             @ParameterObject @PageableDefault(size = 20, sort = "name") Pageable pageable
@@ -50,7 +51,7 @@ public class RoleController {
 
     @Operation(summary = "Get all roles as a list")
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('role:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_READ + "')")
     public ResponseEntity<List<RoleResponseDto>> getList(@ParameterObject RoleSearchCriteria criteria) {
         List<RoleResponseDto> response = roleService.findAll(criteria);
         return ResponseEntity.ok(response);
@@ -58,7 +59,7 @@ public class RoleController {
 
     @Operation(summary = "Create a new role")
     @PostMapping
-    @PreAuthorize("hasAuthority('role:create')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_CREATE + "')")
     public ResponseEntity<RoleResponseDto> create(@Validated @RequestBody RoleCreateDto dto) {
         RoleResponseDto createdRole = roleService.createRole(dto);
 
@@ -72,7 +73,7 @@ public class RoleController {
 
     @Operation(summary = "Update an existing role")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:update')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_UPDATE + "')")
     public ResponseEntity<RoleResponseDto> update(@PathVariable Long id, @Validated @RequestBody RoleUpdateDto dto) {
         RoleResponseDto updatedRole = roleService.updateRole(id, dto);
         return ResponseEntity.ok(updatedRole);
@@ -80,7 +81,7 @@ public class RoleController {
 
     @Operation(summary = "Delete a role")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:delete')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();

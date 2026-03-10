@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.dto.request.individual;
 
-import it.andrea.insula.customer.internal.address.dto.request.AddressUpdateDto;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressUpdateDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -27,6 +27,6 @@ public record IndividualCustomerUpdateDto(
         String nationality,
 
         @Valid
-        AddressUpdateDto billingAddress
+        CustomerAddressUpdateDto billingAddress
 ) {
 }

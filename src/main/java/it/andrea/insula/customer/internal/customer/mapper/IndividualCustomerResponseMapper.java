@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
-import it.andrea.insula.customer.internal.address.mapper.AddressToAddressResponseDtoMapper;
+import it.andrea.insula.customer.internal.address.mapper.CustomerAddressResponseMapper;
 import it.andrea.insula.customer.internal.customer.dto.response.individual.IndividualCustomerResponseDto;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomer;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class IndividualCustomerResponseMapper implements Function<IndividualCustomer, IndividualCustomerResponseDto> {
 
-    private final AddressToAddressResponseDtoMapper addressMapper;
+    private final CustomerAddressResponseMapper addressMapper;
 
     @Override
     public IndividualCustomerResponseDto apply(IndividualCustomer customer) {

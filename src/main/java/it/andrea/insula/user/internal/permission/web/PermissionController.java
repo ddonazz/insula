@@ -3,6 +3,7 @@ package it.andrea.insula.user.internal.permission.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
+import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.permission.dto.request.PermissionSearchCriteria;
 import it.andrea.insula.user.internal.permission.dto.response.PermissionResponseDto;
 import it.andrea.insula.user.internal.permission.service.PermissionService;
@@ -28,7 +29,7 @@ public class PermissionController {
 
     @Operation(summary = "Get all permissions")
     @GetMapping
-    @PreAuthorize("hasAuthority('permission:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PERMISSION_READ + "')")
     public ResponseEntity<PageResponse<PermissionResponseDto>> getAll(
             @ParameterObject PermissionSearchCriteria criteria,
             @ParameterObject @PageableDefault(size = 20, sort = "authority") Pageable pageable
@@ -39,7 +40,7 @@ public class PermissionController {
 
     @Operation(summary = "Get all permissions as a list")
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('permission:read')")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PERMISSION_READ + "')")
     public ResponseEntity<List<PermissionResponseDto>> getList(@ParameterObject PermissionSearchCriteria criteria) {
         List<PermissionResponseDto> response = permissionService.getList(criteria);
         return ResponseEntity.ok(response);

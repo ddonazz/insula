@@ -1,7 +1,6 @@
 package it.andrea.insula.user.internal.user.service;
 
 import it.andrea.insula.core.dto.PageResponse;
-import it.andrea.insula.core.exception.ResourceInUseException;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
@@ -15,8 +14,8 @@ import it.andrea.insula.user.internal.user.mapper.UserCreateDtoToUserMapper;
 import it.andrea.insula.user.internal.user.mapper.UserToUserResponseDtoMapper;
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
-import it.andrea.insula.user.internal.user.model.UserStatus;
 import it.andrea.insula.user.internal.user.model.UserSpecification;
+import it.andrea.insula.user.internal.user.model.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -38,19 +37,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserValidator userValidator;
 
     private final UserCreateDtoToUserMapper createMapper;
     private final UserToUserResponseDtoMapper responseMapper;
 
     @Transactional
     public UserResponseDto create(UserCreateDto dto) {
-        if (userRepository.existsByUsername(dto.username())) {
-            throw new ResourceInUseException(UserErrorCodes.USERNAME_ALREADY_EXISTS, dto.username());
-        }
-
-        if (userRepository.existsByEmail(dto.email())) {
-            throw new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, dto.email());
-        }
+        userValidator.validateCreate(dto.username(), dto.email());
 
         User user = createMapper.apply(dto);
         user.setPassword(passwordEncoder.encode(dto.password()));
@@ -67,17 +61,13 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
 
-        if (dto.username() != null && !dto.username().equals(user.getUsername())) {
-            if (userRepository.existsByUsernameAndIdNot(dto.username(), id)) {
-                throw new ResourceInUseException(UserErrorCodes.USERNAME_ALREADY_EXISTS, dto.username());
-            }
+        userValidator.validateUpdate(id, dto.username(), user.getUsername(), dto.email(), user.getEmail());
+
+        if (dto.username() != null) {
             user.setUsername(dto.username());
         }
 
-        if (dto.email() != null && !dto.email().equals(user.getEmail())) {
-            if (userRepository.existsByEmailAndIdNot(dto.email(), id)) {
-                throw new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, dto.email());
-            }
+        if (dto.email() != null) {
             user.setEmail(dto.email());
         }
 
@@ -155,10 +145,9 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, username));
 
-        if (dto.email() != null && !dto.email().equals(user.getEmail())) {
-            if (userRepository.existsByEmailAndIdNot(dto.email(), user.getId())) {
-                throw new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, dto.email());
-            }
+        userValidator.validateEmailUpdate(user.getId(), dto.email(), user.getEmail());
+
+        if (dto.email() != null) {
             user.setEmail(dto.email());
         }
 

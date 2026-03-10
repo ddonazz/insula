@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
-import it.andrea.insula.customer.internal.address.mapper.AddressPatchMapper;
+import it.andrea.insula.customer.internal.address.mapper.CustomerAddressPatchMapper;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomer;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.function.BiFunction;
 @RequiredArgsConstructor
 public class IndividualCustomerPatchMapper implements BiFunction<IndividualCustomerUpdateDto, IndividualCustomer, IndividualCustomer> {
 
-    private final AddressPatchMapper addressPatchMapper;
+    private final CustomerAddressPatchMapper addressPatchMapper;
 
     @Override
     public IndividualCustomer apply(IndividualCustomerUpdateDto dto, IndividualCustomer customer) {

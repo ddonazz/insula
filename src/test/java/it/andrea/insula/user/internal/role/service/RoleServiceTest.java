@@ -3,6 +3,7 @@ package it.andrea.insula.user.internal.role.service;
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.core.exception.ResourceInUseException;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
+import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.permission.model.Permission;
 import it.andrea.insula.user.internal.permission.model.PermissionRepository;
 import it.andrea.insula.user.internal.role.dto.request.RoleCreateDto;
@@ -40,6 +41,8 @@ class RoleServiceTest {
     private RoleRepository roleRepository;
     @Mock
     private PermissionRepository permissionRepository;
+    @Mock
+    private RoleValidator roleValidator;
     @Mock
     private RoleToRoleResponseDtoMapper roleResponseMapper;
     @Mock
@@ -84,9 +87,9 @@ class RoleServiceTest {
     @Test
     void createRole_shouldCreateSuccessfully() {
         RoleCreateDto dto = new RoleCreateDto("ADMIN", "Admin role", Set.of(1L));
-        Permission perm = Permission.builder().id(1L).authority("user:read").description("Read").domain("USER").build();
+        Permission perm = Permission.builder().id(1L).authority(PermissionAuthority.Constants.USER_READ).description("Read").domain(PermissionAuthority.Domains.USER).build();
 
-        when(roleRepository.existsByName("ADMIN")).thenReturn(false);
+        doNothing().when(roleValidator).validateCreate("ADMIN");
         when(roleCreateMapper.apply(dto)).thenReturn(role);
         when(permissionRepository.findAllById(Set.of(1L))).thenReturn(List.of(perm));
         when(roleRepository.save(role)).thenReturn(role);
@@ -101,7 +104,8 @@ class RoleServiceTest {
     @Test
     void createRole_shouldThrowWhenNameExists() {
         RoleCreateDto dto = new RoleCreateDto("ADMIN", "Admin role", Set.of(1L));
-        when(roleRepository.existsByName("ADMIN")).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.ROLE_NAME_EXISTS, "ADMIN"))
+                .when(roleValidator).validateCreate("ADMIN");
 
         assertThatThrownBy(() -> roleService.createRole(dto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -110,9 +114,9 @@ class RoleServiceTest {
     @Test
     void createRole_shouldThrowWhenPermissionsNotFound() {
         RoleCreateDto dto = new RoleCreateDto("ADMIN", "Admin role", Set.of(1L, 99L));
-        Permission perm = Permission.builder().id(1L).authority("user:read").description("Read").domain("USER").build();
+        Permission perm = Permission.builder().id(1L).authority(PermissionAuthority.Constants.USER_READ).description("Read").domain(PermissionAuthority.Domains.USER).build();
 
-        when(roleRepository.existsByName("ADMIN")).thenReturn(false);
+        doNothing().when(roleValidator).validateCreate("ADMIN");
         when(roleCreateMapper.apply(dto)).thenReturn(role);
         when(permissionRepository.findAllById(Set.of(1L, 99L))).thenReturn(List.of(perm));
 
@@ -124,7 +128,7 @@ class RoleServiceTest {
     void updateRole_shouldUpdateSuccessfully() {
         RoleUpdateDto dto = new RoleUpdateDto("SUPERADMIN", "Super admin", null);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
-        when(roleRepository.existsByNameAndIdNot("SUPERADMIN", 1L)).thenReturn(false);
+        doNothing().when(roleValidator).validateUpdate(1L, "SUPERADMIN", "ADMIN");
         when(roleRepository.save(role)).thenReturn(role);
         when(roleResponseMapper.apply(role)).thenReturn(responseDto);
 
@@ -138,7 +142,8 @@ class RoleServiceTest {
     void updateRole_shouldThrowWhenNameTaken() {
         RoleUpdateDto dto = new RoleUpdateDto("TAKEN", null, null);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
-        when(roleRepository.existsByNameAndIdNot("TAKEN", 1L)).thenReturn(true);
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.ROLE_NAME_EXISTS, "TAKEN"))
+                .when(roleValidator).validateUpdate(1L, "TAKEN", "ADMIN");
 
         assertThatThrownBy(() -> roleService.updateRole(1L, dto))
                 .isInstanceOf(ResourceInUseException.class);
@@ -148,18 +153,19 @@ class RoleServiceTest {
     void updateRole_shouldSkipNameCheckWhenUnchanged() {
         RoleUpdateDto dto = new RoleUpdateDto("ADMIN", "Updated desc", null);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        doNothing().when(roleValidator).validateUpdate(1L, "ADMIN", "ADMIN");
         when(roleRepository.save(role)).thenReturn(role);
         when(roleResponseMapper.apply(role)).thenReturn(responseDto);
 
         roleService.updateRole(1L, dto);
 
-        verify(roleRepository, never()).existsByNameAndIdNot(any(), any());
         assertThat(role.getDescription()).isEqualTo("Updated desc");
     }
 
     @Test
     void deleteRole_shouldDeleteSuccessfully() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        doNothing().when(roleValidator).validateDelete(role);
 
         roleService.deleteRole(1L);
 
@@ -171,6 +177,8 @@ class RoleServiceTest {
         User user = new User();
         role.getUsers().add(user);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.ROLE_IN_USE, 1L))
+                .when(roleValidator).validateDelete(role);
 
         assertThatThrownBy(() -> roleService.deleteRole(1L))
                 .isInstanceOf(ResourceInUseException.class);

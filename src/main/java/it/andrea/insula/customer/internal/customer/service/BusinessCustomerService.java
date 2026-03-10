@@ -12,11 +12,7 @@ import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerCreate
 import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerPatchMapper;
 import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerResponseMapper;
 import it.andrea.insula.customer.internal.customer.mapper.CustomerContactCreateMapper;
-import it.andrea.insula.customer.internal.customer.model.BusinessCustomer;
-import it.andrea.insula.customer.internal.customer.model.BusinessCustomerRepository;
-import it.andrea.insula.customer.internal.customer.model.CustomerContact;
-import it.andrea.insula.customer.internal.customer.model.CustomerContactRepository;
-import it.andrea.insula.customer.internal.customer.model.CustomerSpecification;
+import it.andrea.insula.customer.internal.customer.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

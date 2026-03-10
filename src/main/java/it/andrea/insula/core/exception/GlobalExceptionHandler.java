@@ -1,10 +1,10 @@
 package it.andrea.insula.core.exception;
 
+import it.andrea.insula.core.locale.LocaleContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request,
             HttpStatus status) {
 
-        Locale locale = LocaleContextHolder.getLocale();
+        Locale locale = LocaleContext.getLocale();
         String message = messageSource.getMessage(
                 definition.getErrorCode(),
                 args,
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        Locale locale = LocaleContextHolder.getLocale();
+        Locale locale = LocaleContext.getLocale();
 
         String errorDetails = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> {

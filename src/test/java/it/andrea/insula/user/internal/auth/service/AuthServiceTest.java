@@ -4,11 +4,7 @@ import it.andrea.insula.security.JwtService;
 import it.andrea.insula.user.internal.auth.dto.AuthResponse;
 import it.andrea.insula.user.internal.auth.dto.LoginRequest;
 import it.andrea.insula.user.internal.auth.dto.RefreshTokenRequest;
-import it.andrea.insula.user.internal.user.model.RefreshToken;
-import it.andrea.insula.user.internal.user.model.RefreshTokenRepository;
-import it.andrea.insula.user.internal.user.model.User;
-import it.andrea.insula.user.internal.user.model.UserRepository;
-import it.andrea.insula.user.internal.user.model.UserStatus;
+import it.andrea.insula.user.internal.user.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +17,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

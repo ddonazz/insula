@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.dto.request.business;
 
-import it.andrea.insula.customer.internal.address.dto.request.AddressCreateDto;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,11 +24,11 @@ public record BusinessCustomerCreateDto(
 
         @NotNull
         @Valid
-        AddressCreateDto legalAddress,
+        CustomerAddressCreateDto legalAddress,
 
         @NotNull
         @Valid
-        AddressCreateDto billingAddress,
+        CustomerAddressCreateDto billingAddress,
 
         @Size(max = 7)
         String sdiCode,

@@ -3,6 +3,7 @@ package it.andrea.insula.security.config;
 import io.jsonwebtoken.ExpiredJwtException;
 import it.andrea.insula.core.tenant.TenantContext;
 import it.andrea.insula.security.JwtService;
+import it.andrea.insula.security.PermissionAuthority;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
@@ -67,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     String impersonateTenantId = request.getHeader("X-Tenant-ID");
                     boolean isSuperAdmin = userDetails.getAuthorities().stream()
-                            .anyMatch(a -> Objects.equals(a.getAuthority(), "admin:access"));
+                            .anyMatch(a -> Objects.equals(a.getAuthority(), PermissionAuthority.Constants.ADMIN_ACCESS));
 
                     if (isSuperAdmin && impersonateTenantId != null) {
                         try {

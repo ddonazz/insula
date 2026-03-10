@@ -6,12 +6,12 @@ import it.andrea.insula.agency.internal.dto.request.AgencyUpdateDto;
 import it.andrea.insula.agency.internal.dto.response.AgencyResponseDto;
 import it.andrea.insula.agency.internal.exception.AgencyErrorCodes;
 import it.andrea.insula.agency.internal.mapper.AgencyCreateDtoToAgencyMapper;
+import it.andrea.insula.agency.internal.mapper.AgencyPatchMapper;
 import it.andrea.insula.agency.internal.mapper.AgencyToAgencyResponseDtoMapper;
 import it.andrea.insula.agency.internal.model.Agency;
 import it.andrea.insula.agency.internal.model.AgencyRepository;
 import it.andrea.insula.agency.internal.model.AgencySpecification;
 import it.andrea.insula.core.dto.PageResponse;
-import it.andrea.insula.core.exception.ResourceInUseException;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +19,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,19 +29,14 @@ import java.util.stream.Collectors;
 public class AgencyService {
 
     private final AgencyRepository agencyRepository;
+    private final AgencyValidator agencyValidator;
     private final AgencyCreateDtoToAgencyMapper createMapper;
+    private final AgencyPatchMapper patchMapper;
     private final AgencyToAgencyResponseDtoMapper responseMapper;
 
     @Transactional
     public AgencyResponseDto create(AgencyCreateDto dto) {
-        if (agencyRepository.existsByVatNumber(dto.vatNumber())) {
-            throw new ResourceInUseException(AgencyErrorCodes.VAT_NUMBER_ALREADY_EXISTS, dto.vatNumber());
-        }
-
-        if (dto.pecEmail() != null && agencyRepository.existsByPecEmail(dto.pecEmail())) {
-            throw new ResourceInUseException(AgencyErrorCodes.PEC_EMAIL_ALREADY_EXISTS, dto.pecEmail());
-        }
-
+        agencyValidator.validateCreate(dto.vatNumber(), dto.pecEmail());
         Agency agency = createMapper.apply(dto);
         Agency savedAgency = agencyRepository.save(agency);
         return responseMapper.apply(savedAgency);
@@ -53,56 +47,13 @@ public class AgencyService {
         Agency agency = agencyRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException(AgencyErrorCodes.AGENCY_NOT_FOUND, publicId));
 
-        if (dto.name() != null) {
-            agency.setName(dto.name());
-        }
+        agencyValidator.validateUpdate(
+                agency.getId(),
+                dto.vatNumber(), agency.getVatNumber(),
+                dto.pecEmail(), agency.getPecEmail()
+        );
 
-        if (dto.vatNumber() != null && !dto.vatNumber().equals(agency.getVatNumber())) {
-            if (agencyRepository.existsByVatNumberAndIdNot(dto.vatNumber(), agency.getId())) {
-                throw new ResourceInUseException(AgencyErrorCodes.VAT_NUMBER_ALREADY_EXISTS, dto.vatNumber());
-            }
-            agency.setVatNumber(dto.vatNumber());
-        }
-
-        if (dto.fiscalCode() != null) {
-            agency.setFiscalCode(dto.fiscalCode());
-        }
-
-        if (dto.sdiCode() != null) {
-            agency.setSdiCode(dto.sdiCode());
-        }
-
-        if (dto.pecEmail() != null && !dto.pecEmail().equals(agency.getPecEmail())) {
-            if (agencyRepository.existsByPecEmailAndIdNot(dto.pecEmail(), agency.getId())) {
-                throw new ResourceInUseException(AgencyErrorCodes.PEC_EMAIL_ALREADY_EXISTS, dto.pecEmail());
-            }
-            agency.setPecEmail(dto.pecEmail());
-        }
-
-        if (dto.contactEmail() != null) {
-            agency.setContactEmail(dto.contactEmail());
-        }
-
-        if (dto.phoneNumber() != null) {
-            agency.setPhoneNumber(dto.phoneNumber());
-        }
-
-        if (dto.websiteUrl() != null) {
-            agency.setWebsiteUrl(dto.websiteUrl());
-        }
-
-        if (dto.logoUrl() != null) {
-            agency.setLogoUrl(dto.logoUrl());
-        }
-
-        if (dto.timeZone() != null) {
-            agency.setTimeZone(ZoneId.of(dto.timeZone()));
-        }
-
-        if (dto.status() != null) {
-            agency.setStatus(dto.status());
-        }
-
+        patchMapper.apply(dto, agency);
         Agency updatedAgency = agencyRepository.save(agency);
         return responseMapper.apply(updatedAgency);
     }
