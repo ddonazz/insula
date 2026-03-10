@@ -1,11 +1,11 @@
 package it.andrea.insula.user.internal.permission.mapper;
 
 import it.andrea.insula.core.dto.EnumTranslator;
-import it.andrea.insula.core.locale.LocaleContext;
 import it.andrea.insula.user.internal.permission.dto.response.PermissionResponseDto;
 import it.andrea.insula.user.internal.permission.model.Permission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
@@ -23,7 +23,7 @@ public class PermissionToPermissionResponseDtoMapper implements Function<Permiss
 
     @Override
     public PermissionResponseDto apply(Permission permission) {
-        Locale locale = LocaleContext.getLocale();
+        Locale locale = LocaleContextHolder.getLocale();
 
         return new PermissionResponseDto(
                 permission.getId(),

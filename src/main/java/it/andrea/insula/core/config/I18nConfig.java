@@ -3,6 +3,7 @@ package it.andrea.insula.core.config;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
@@ -18,6 +19,9 @@ public class I18nConfig {
         AcceptHeaderLocaleResolver resolver = new AcceptHeaderLocaleResolver();
         resolver.setDefaultLocale(Locale.ITALIAN);
         resolver.setSupportedLocales(List.of(Locale.ITALIAN, Locale.ENGLISH));
+
+        LocaleContextHolder.setDefaultLocale(Locale.ITALIAN);
+
         return resolver;
     }
 

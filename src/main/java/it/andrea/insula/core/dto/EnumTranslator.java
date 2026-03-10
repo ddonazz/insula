@@ -1,6 +1,6 @@
 package it.andrea.insula.core.dto;
 
-import it.andrea.insula.core.locale.LocaleContext;
+import org.springframework.context.i18n.LocaleContextHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
@@ -34,7 +34,7 @@ public class EnumTranslator {
         if (value == null) {
             return null;
         }
-        Locale locale = LocaleContext.getLocale();
+        Locale locale = LocaleContextHolder.getLocale();
         String key = buildKey(value);
         String label = messageSource.getMessage(key, null, value.name(), locale);
         return new TranslatedEnum(value.name(), label);
@@ -67,7 +67,7 @@ public class EnumTranslator {
         if (code == null) {
             return null;
         }
-        Locale locale = LocaleContext.getLocale();
+        Locale locale = LocaleContextHolder.getLocale();
         String key = prefix + code;
         String label = messageSource.getMessage(key, null, code, locale);
         return new TranslatedEnum(code, label);
