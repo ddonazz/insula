@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -44,7 +46,11 @@ public class AuthService {
                 .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-        String accessToken = jwtService.generateToken(userDetails);
+
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("tenantId", user.getTenantId().toString());
+
+        String accessToken = jwtService.generateToken(extraClaims, userDetails);
         String refreshToken = createRefreshToken(user);
 
         return new AuthResponse(accessToken, refreshToken);
@@ -62,7 +68,10 @@ public class AuthService {
 
         User user = refreshToken.getUser();
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-        String newAccessToken = jwtService.generateToken(userDetails);
+
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("tenantId", user.getTenantId().toString());
+        String newAccessToken = jwtService.generateToken(extraClaims, userDetails);
 
         return new AuthResponse(newAccessToken, request.refreshToken());
     }

@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.model;
 
-import it.andrea.insula.core.model.BaseEntity;
+import it.andrea.insula.core.model.TenantAwareBaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public abstract class Customer extends BaseEntity {
+public abstract class Customer extends TenantAwareBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customer_sequence")

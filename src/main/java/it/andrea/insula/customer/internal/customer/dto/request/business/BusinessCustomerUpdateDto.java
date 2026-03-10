@@ -4,8 +4,8 @@ import it.andrea.insula.customer.internal.address.dto.request.AddressUpdateDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.lang.NonNull;
 
 public record BusinessCustomerUpdateDto(
         @NotBlank
@@ -28,11 +28,11 @@ public record BusinessCustomerUpdateDto(
         @Email
         String pecEmail,
 
-        @NonNull
+        @NotNull
         @Valid
         AddressUpdateDto legalAddress,
 
-        @NonNull
+        @NotNull
         @Valid
         AddressUpdateDto billingAddress
 ) {

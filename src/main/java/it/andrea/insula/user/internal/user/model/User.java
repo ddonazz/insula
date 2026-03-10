@@ -1,6 +1,7 @@
 package it.andrea.insula.user.internal.user.model;
 
 import it.andrea.insula.core.model.BaseEntity;
+import it.andrea.insula.core.model.TenantAwareBaseEntity;
 import it.andrea.insula.user.internal.role.model.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Setter
 @Table(name = "users")
 @NoArgsConstructor
-public class User extends BaseEntity {
+public class User extends TenantAwareBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_sequence")

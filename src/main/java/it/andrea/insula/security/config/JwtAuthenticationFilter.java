@@ -1,12 +1,14 @@
 package it.andrea.insula.security.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import it.andrea.insula.core.tenant.TenantContext;
 import it.andrea.insula.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,7 +19,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Objects;
+import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -45,19 +50,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+        try {
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    String userTenantId = jwtService.extractClaim(jwt, claims -> claims.get("tenantId", String.class));
+
+                    String impersonateTenantId = request.getHeader("X-Tenant-ID");
+                    boolean isSuperAdmin = userDetails.getAuthorities().stream()
+                            .anyMatch(a -> Objects.equals(a.getAuthority(), "admin:access"));
+
+                    if (isSuperAdmin && impersonateTenantId != null) {
+                        try {
+                            TenantContext.setTenantId(UUID.fromString(impersonateTenantId));
+                            log.info("Admin {} sta impersonando l'agenzia {}", username, impersonateTenantId);
+                        } catch (IllegalArgumentException e) {
+                            log.warn("Header X-Tenant-ID non valido: {}", impersonateTenantId);
+                        }
+                    } else if (userTenantId != null) {
+                        TenantContext.setTenantId(UUID.fromString(userTenantId));
+                    }
+                }
             }
+
+            filterChain.doFilter(request, response);
+
+        } finally {
+            TenantContext.clear();
         }
-        filterChain.doFilter(request, response);
     }
 }

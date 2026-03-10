@@ -22,6 +22,11 @@ public enum PermissionAuthority {
     CUSTOMER_UPDATE("customer:update", "Update customer", "CUSTOMER"),
     CUSTOMER_DELETE("customer:delete", "Delete customer", "CUSTOMER"),
 
+    AGENCY_READ("agency:read", "Read agency", "AGENCY"),
+    AGENCY_CREATE("agency:create", "Create agency", "AGENCY"),
+    AGENCY_UPDATE("agency:update", "Update agency", "AGENCY"),
+    AGENCY_DELETE("agency:delete", "Delete agency", "AGENCY"),
+
     PROPERTY_READ("property:read", "Read property", "PROPERTY"),
     PROPERTY_CREATE("property:create", "Create property", "PROPERTY"),
     PROPERTY_UPDATE("property:update", "Update property", "PROPERTY"),

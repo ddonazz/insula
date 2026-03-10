@@ -1,5 +1,6 @@
 package it.andrea.insula.user.internal.setup;
 
+import it.andrea.insula.core.tenant.TenantIdentifierResolver;
 import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.permission.model.Permission;
 import it.andrea.insula.user.internal.permission.model.PermissionRepository;
@@ -115,6 +116,8 @@ public class UserModuleDataInitializer implements ApplicationRunner {
         admin.setStatus(UserStatus.ACTIVE);
 
         admin.setRoles(Collections.singleton(adminRole));
+
+        admin.setTenantId(TenantIdentifierResolver.DEFAULT_TENANT);
 
         userRepository.save(admin);
     }
