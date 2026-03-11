@@ -7,7 +7,6 @@ import java.util.Set;
 
 @Builder
 public record RoleResponseDto(
-        Long id,
         String name,
         String description,
         Set<PermissionResponseDto> permissions

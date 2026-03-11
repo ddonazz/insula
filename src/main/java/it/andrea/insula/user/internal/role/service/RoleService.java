@@ -39,8 +39,8 @@ public class RoleService {
     private final RoleCreateDtoToRoleMapper roleCreateDtoToRoleMapper;
 
     @Transactional(readOnly = true)
-    public RoleResponseDto getById(Long id) {
-        Role role = retrieveRole(id);
+    public RoleResponseDto getByName(String name) {
+        Role role = retrieveRoleByName(name);
         return roleToRoleResponseDtoMapper.apply(role);
     }
 
@@ -75,10 +75,12 @@ public class RoleService {
     }
 
     @Transactional
-    public RoleResponseDto updateRole(Long id, RoleUpdateDto request) {
-        Role role = retrieveRole(id);
+    public RoleResponseDto updateRole(String name, RoleUpdateDto request) {
+        Role role = retrieveRoleByName(name);
 
-        roleValidator.validateUpdate(id, request.name(), role.getName());
+        roleValidator.validateNotAssignedToAdmin(role);
+
+        roleValidator.validateUpdate(role.getId(), request.name(), role.getName());
 
         if (request.name() != null) {
             role.setName(request.name());
@@ -98,15 +100,16 @@ public class RoleService {
     }
 
     @Transactional
-    public void deleteRole(Long id) {
-        Role role = retrieveRole(id);
+    public void deleteRole(String name) {
+        Role role = retrieveRoleByName(name);
+        roleValidator.validateNotAssignedToAdmin(role);
         roleValidator.validateDelete(role);
         roleRepository.delete(role);
     }
 
-    private Role retrieveRole(Long id) {
-        return roleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.ROLE_NOT_FOUND, id));
+    private Role retrieveRoleByName(String name) {
+        return roleRepository.findByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.ROLE_NOT_FOUND, name));
     }
 
     private Set<Permission> computePermissions(Collection<Long> permissionIds) {

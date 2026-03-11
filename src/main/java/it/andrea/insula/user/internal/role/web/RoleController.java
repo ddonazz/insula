@@ -30,11 +30,11 @@ public class RoleController {
 
     private final RoleService roleService;
 
-    @Operation(summary = "Get a role by ID")
-    @GetMapping("/{id}")
+    @Operation(summary = "Get a role by name")
+    @GetMapping("/{name}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_READ + "')")
-    public ResponseEntity<RoleResponseDto> getById(@PathVariable Long id) {
-        RoleResponseDto roleDto = roleService.getById(id);
+    public ResponseEntity<RoleResponseDto> getByName(@PathVariable String name) {
+        RoleResponseDto roleDto = roleService.getByName(name);
         return ResponseEntity.ok(roleDto);
     }
 
@@ -64,26 +64,26 @@ public class RoleController {
         RoleResponseDto createdRole = roleService.createRole(dto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(createdRole.id())
+                .path("/{name}")
+                .buildAndExpand(createdRole.name())
                 .toUri();
 
         return ResponseEntity.created(location).body(createdRole);
     }
 
     @Operation(summary = "Update an existing role")
-    @PutMapping("/{id}")
+    @PutMapping("/{name}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_UPDATE + "')")
-    public ResponseEntity<RoleResponseDto> update(@PathVariable Long id, @Validated @RequestBody RoleUpdateDto dto) {
-        RoleResponseDto updatedRole = roleService.updateRole(id, dto);
+    public ResponseEntity<RoleResponseDto> update(@PathVariable String name, @Validated @RequestBody RoleUpdateDto dto) {
+        RoleResponseDto updatedRole = roleService.updateRole(name, dto);
         return ResponseEntity.ok(updatedRole);
     }
 
     @Operation(summary = "Delete a role")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{name}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_DELETE + "')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        roleService.deleteRole(id);
+    public ResponseEntity<Void> delete(@PathVariable String name) {
+        roleService.deleteRole(name);
         return ResponseEntity.noContent().build();
     }
 }

@@ -18,7 +18,6 @@ public class RoleToRoleResponseDtoMapper implements Function<Role, RoleResponseD
     @Override
     public RoleResponseDto apply(Role role) {
         return new RoleResponseDto(
-                role.getId(),
                 role.getName(),
                 role.getDescription(),
                 role.getPermissions().stream().map(permissionMapper).collect(Collectors.toSet())

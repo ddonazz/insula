@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,6 +45,9 @@ public class User extends TenantAwareBaseEntity {
     @Column()
     private Instant deletedAt;
 
+    @Column(nullable = false, updatable = false)
+    private boolean systemAdmin = false;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
@@ -75,5 +79,17 @@ public class User extends TenantAwareBaseEntity {
     @Transient
     public boolean isCredentialsNonExpired() {
         return status != UserStatus.DELETED;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User user)) return false;
+        return Objects.equals(publicId, user.publicId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(publicId);
     }
 }

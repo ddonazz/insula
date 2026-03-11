@@ -114,6 +114,7 @@ public class UserModuleDataInitializer implements ApplicationRunner {
         admin.setEmail(ADMIN_EMAIL);
         admin.setPassword(passwordEncoder.encode(ADMIN_DEFAULT_PASSWORD));
         admin.setStatus(UserStatus.ACTIVE);
+        admin.setSystemAdmin(true);
 
         admin.setRoles(Collections.singleton(adminRole));
 

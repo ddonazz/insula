@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
+import it.andrea.insula.user.internal.user.dto.request.UserPatchDto;
 import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
 import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
-import it.andrea.insula.user.internal.user.dto.request.UserUpdateDto;
 import it.andrea.insula.user.internal.user.dto.response.UserResponseDto;
 import it.andrea.insula.user.internal.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -34,16 +34,8 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "Get a user by Internal ID")
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_READ + "')")
-    public ResponseEntity<UserResponseDto> getById(@PathVariable Long id) {
-        UserResponseDto userDto = userService.getById(id);
-        return ResponseEntity.ok(userDto);
-    }
-
     @Operation(summary = "Get a user by Public ID (UUID)")
-    @GetMapping("/public/{publicId}")
+    @GetMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_READ + "')")
     public ResponseEntity<UserResponseDto> getByPublicId(@PathVariable UUID publicId) {
         UserResponseDto userDto = userService.getByPublicId(publicId);
@@ -76,42 +68,42 @@ public class UserController {
         UserResponseDto createdUser = userService.create(dto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(createdUser.id())
+                .path("/{publicId}")
+                .buildAndExpand(createdUser.publicId())
                 .toUri();
 
         return ResponseEntity.created(location).body(createdUser);
     }
 
-    @Operation(summary = "Update an existing user")
-    @PutMapping("/{id}")
+    @Operation(summary = "Patch an existing user")
+    @PatchMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_UPDATE + "')")
-    public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @Validated @RequestBody UserUpdateDto dto) {
-        UserResponseDto updatedUser = userService.update(id, dto);
+    public ResponseEntity<UserResponseDto> patch(@PathVariable UUID publicId, @Validated @RequestBody UserPatchDto dto) {
+        UserResponseDto updatedUser = userService.patch(publicId, dto);
         return ResponseEntity.ok(updatedUser);
     }
 
     @Operation(summary = "Activate a user")
-    @PutMapping("/{id}/activate")
+    @PutMapping("/{publicId}/activate")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_UPDATE + "')")
-    public ResponseEntity<Void> activate(@PathVariable Long id) {
-        userService.activateUser(id);
+    public ResponseEntity<Void> activate(@PathVariable UUID publicId) {
+        userService.activateUser(publicId);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Suspend a user")
-    @PutMapping("/{id}/suspend")
+    @PutMapping("/{publicId}/suspend")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_UPDATE + "')")
-    public ResponseEntity<Void> suspend(@PathVariable Long id) {
-        userService.suspendUser(id);
+    public ResponseEntity<Void> suspend(@PathVariable UUID publicId) {
+        userService.suspendUser(publicId);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Delete a user")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_DELETE + "')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable UUID publicId) {
+        userService.delete(publicId);
         return ResponseEntity.noContent().build();
     }
 

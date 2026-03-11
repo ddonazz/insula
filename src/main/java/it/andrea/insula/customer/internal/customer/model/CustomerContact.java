@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -42,5 +43,17 @@ public class CustomerContact extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_customer_id", nullable = false)
     private BusinessCustomer businessCustomer;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CustomerContact that)) return false;
+        return Objects.equals(publicId, that.publicId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(publicId);
+    }
 
 }

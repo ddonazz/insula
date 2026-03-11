@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -70,4 +71,16 @@ public class Unit extends TenantAwareBaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "amenity")
     private Set<UnitAmenity> amenities = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Unit unit)) return false;
+        return Objects.equals(publicId, unit.publicId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(publicId);
+    }
 }

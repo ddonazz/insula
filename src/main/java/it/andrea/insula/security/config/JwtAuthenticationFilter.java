@@ -1,7 +1,7 @@
 package it.andrea.insula.security.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import it.andrea.insula.core.tenant.TenantContext;
+import it.andrea.insula.core.tenant.TenantContextHolder;
 import it.andrea.insula.security.JwtService;
 import it.andrea.insula.security.PermissionAuthority;
 import jakarta.servlet.FilterChain;
@@ -73,13 +73,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     if (isSuperAdmin && impersonateTenantId != null) {
                         try {
-                            TenantContext.setTenantId(UUID.fromString(impersonateTenantId));
+                            TenantContextHolder.setTenantId(UUID.fromString(impersonateTenantId));
                             log.info("Admin {} sta impersonando l'agenzia {}", username, impersonateTenantId);
                         } catch (IllegalArgumentException e) {
                             log.warn("Header X-Tenant-ID non valido: {}", impersonateTenantId);
                         }
                     } else if (userTenantId != null) {
-                        TenantContext.setTenantId(UUID.fromString(userTenantId));
+                        TenantContextHolder.setTenantId(UUID.fromString(userTenantId));
                     }
                 }
             }
@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } finally {
-            TenantContext.clear();
+            TenantContextHolder.clear();
         }
     }
 }

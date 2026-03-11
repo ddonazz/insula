@@ -1,5 +1,6 @@
 package it.andrea.insula.user.internal.permission.model;
 
+import it.andrea.insula.core.model.BaseEntity;
 import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.role.model.Role;
 import jakarta.persistence.*;
@@ -14,7 +15,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Permission {
+public class Permission extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "permission_sequence")

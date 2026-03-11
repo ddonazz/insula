@@ -1,5 +1,6 @@
 package it.andrea.insula.user.internal.role.model;
 
+import it.andrea.insula.core.model.BaseEntity;
 import it.andrea.insula.user.internal.permission.model.Permission;
 import it.andrea.insula.user.internal.user.model.User;
 import jakarta.persistence.*;
@@ -15,7 +16,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Role {
+public class Role extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_sequence")

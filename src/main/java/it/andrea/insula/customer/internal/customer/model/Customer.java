@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -39,5 +40,17 @@ public abstract class Customer extends TenantAwareBaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "customer_type", insertable = false, updatable = false)
     private CustomerType customerType;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Customer customer)) return false;
+        return Objects.equals(publicId, customer.publicId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(publicId);
+    }
 
 }

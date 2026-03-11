@@ -12,7 +12,7 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
     @Override
     public UUID resolveCurrentTenantIdentifier() {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = TenantContextHolder.getTenantId();
         return tenantId != null ? tenantId : DEFAULT_TENANT;
     }
 

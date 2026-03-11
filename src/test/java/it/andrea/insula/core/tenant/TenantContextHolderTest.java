@@ -7,33 +7,33 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TenantContextTest {
+class TenantContextHolderTest {
 
     @AfterEach
     void tearDown() {
-        TenantContext.clear();
+        TenantContextHolder.clear();
     }
 
     @Test
     void shouldReturnNullWhenNoTenantSet() {
-        assertThat(TenantContext.getTenantId()).isNull();
+        assertThat(TenantContextHolder.getTenantId()).isNull();
     }
 
     @Test
     void shouldSetAndGetTenantId() {
         UUID tenantId = UUID.randomUUID();
-        TenantContext.setTenantId(tenantId);
+        TenantContextHolder.setTenantId(tenantId);
 
-        assertThat(TenantContext.getTenantId()).isEqualTo(tenantId);
+        assertThat(TenantContextHolder.getTenantId()).isEqualTo(tenantId);
     }
 
     @Test
     void shouldClearTenantId() {
         UUID tenantId = UUID.randomUUID();
-        TenantContext.setTenantId(tenantId);
-        TenantContext.clear();
+        TenantContextHolder.setTenantId(tenantId);
+        TenantContextHolder.clear();
 
-        assertThat(TenantContext.getTenantId()).isNull();
+        assertThat(TenantContextHolder.getTenantId()).isNull();
     }
 
     @Test
@@ -41,18 +41,18 @@ class TenantContextTest {
         UUID tenant1 = UUID.randomUUID();
         UUID tenant2 = UUID.randomUUID();
 
-        TenantContext.setTenantId(tenant1);
+        TenantContextHolder.setTenantId(tenant1);
 
         Thread otherThread = new Thread(() -> {
-            TenantContext.setTenantId(tenant2);
-            assertThat(TenantContext.getTenantId()).isEqualTo(tenant2);
-            TenantContext.clear();
+            TenantContextHolder.setTenantId(tenant2);
+            assertThat(TenantContextHolder.getTenantId()).isEqualTo(tenant2);
+            TenantContextHolder.clear();
         });
         otherThread.start();
         otherThread.join();
 
         // Il tenant del thread principale non è stato toccato
-        assertThat(TenantContext.getTenantId()).isEqualTo(tenant1);
+        assertThat(TenantContextHolder.getTenantId()).isEqualTo(tenant1);
     }
 
     @Test
@@ -60,11 +60,11 @@ class TenantContextTest {
         UUID first = UUID.randomUUID();
         UUID second = UUID.randomUUID();
 
-        TenantContext.setTenantId(first);
-        assertThat(TenantContext.getTenantId()).isEqualTo(first);
+        TenantContextHolder.setTenantId(first);
+        assertThat(TenantContextHolder.getTenantId()).isEqualTo(first);
 
-        TenantContext.setTenantId(second);
-        assertThat(TenantContext.getTenantId()).isEqualTo(second);
+        TenantContextHolder.setTenantId(second);
+        assertThat(TenantContextHolder.getTenantId()).isEqualTo(second);
     }
 }
 

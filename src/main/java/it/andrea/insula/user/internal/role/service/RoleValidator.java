@@ -1,5 +1,6 @@
 package it.andrea.insula.user.internal.role.service;
 
+import it.andrea.insula.core.exception.ImmutableResourceException;
 import it.andrea.insula.core.exception.ResourceInUseException;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
@@ -30,6 +31,22 @@ public class RoleValidator {
     public void validateDelete(Role role) {
         if (!role.getUsers().isEmpty()) {
             throw new ResourceInUseException(UserErrorCodes.ROLE_IN_USE, role.getId());
+        }
+    }
+
+    /**
+     * Throws {@link ImmutableResourceException} if the role is currently
+     * assigned to any system administrator user ({@code systemAdmin = true}).
+     * <p>
+     * This check is role-name-agnostic: it only looks at the users
+     * associated with the role instance.
+     * </p>
+     */
+    public void validateNotAssignedToAdmin(Role role) {
+        boolean assignedToAdmin = role.getUsers().stream()
+                .anyMatch(it.andrea.insula.user.internal.user.model.User::isSystemAdmin);
+        if (assignedToAdmin) {
+            throw new ImmutableResourceException(UserErrorCodes.ADMIN_ROLE_IMMUTABLE);
         }
     }
 }

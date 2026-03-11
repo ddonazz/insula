@@ -26,7 +26,6 @@ public class PermissionToPermissionResponseDtoMapper implements Function<Permiss
         Locale locale = LocaleContextHolder.getLocale();
 
         return new PermissionResponseDto(
-                permission.getId(),
                 permission.getAuthority(),
                 translateDescription(permission.getAuthority(), permission.getDescription(), locale),
                 enumTranslator.translate(DOMAIN_PREFIX, permission.getDomain())

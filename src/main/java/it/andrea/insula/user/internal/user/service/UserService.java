@@ -5,12 +5,14 @@ import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
 import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
+import it.andrea.insula.user.internal.user.dto.request.UserPatchDto;
 import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
 import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
-import it.andrea.insula.user.internal.user.dto.request.UserUpdateDto;
 import it.andrea.insula.user.internal.user.dto.response.UserResponseDto;
 import it.andrea.insula.user.internal.user.exception.UserErrorCodes;
 import it.andrea.insula.user.internal.user.mapper.UserCreateDtoToUserMapper;
+import it.andrea.insula.user.internal.user.mapper.UserPatchMapper;
+import it.andrea.insula.user.internal.user.mapper.UserProfilePatchMapper;
 import it.andrea.insula.user.internal.user.mapper.UserToUserResponseDtoMapper;
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
@@ -38,8 +40,11 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserValidator userValidator;
+    private final AdminGuard adminGuard;
 
     private final UserCreateDtoToUserMapper createMapper;
+    private final UserPatchMapper patchMapper;
+    private final UserProfilePatchMapper profilePatchMapper;
     private final UserToUserResponseDtoMapper responseMapper;
 
     @Transactional
@@ -52,28 +57,21 @@ public class UserService {
         Set<Role> roles = fetchRolesByIds(dto.roles());
         user.setRoles(roles);
 
+        userValidator.validateTenantConstraints(user);
+
         User savedUser = userRepository.save(user);
         return responseMapper.apply(savedUser);
     }
 
     @Transactional
-    public UserResponseDto update(Long id, UserUpdateDto dto) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
+    public UserResponseDto patch(UUID publicId, UserPatchDto dto) {
+        User user = findByPublicIdOrThrow(publicId);
 
-        userValidator.validateUpdate(id, dto.username(), user.getUsername(), dto.email(), user.getEmail());
+        adminGuard.assertNotAdmin(user);
 
-        if (dto.username() != null) {
-            user.setUsername(dto.username());
-        }
+        userValidator.validateUpdate(user.getId(), dto.username(), user.getUsername(), dto.email(), user.getEmail());
 
-        if (dto.email() != null) {
-            user.setEmail(dto.email());
-        }
-
-        if (dto.status() != null) {
-            user.setStatus(dto.status());
-        }
+        patchMapper.apply(dto, user);
 
         if (dto.roles() != null) {
             Set<Role> roles = fetchRolesByIds(dto.roles());
@@ -85,25 +83,19 @@ public class UserService {
     }
 
     @Transactional
-    public void activateUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
+    public void activateUser(UUID publicId) {
+        User user = findByPublicIdOrThrow(publicId);
+        adminGuard.assertNotAdmin(user);
         user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
     }
 
     @Transactional
-    public void suspendUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
+    public void suspendUser(UUID publicId) {
+        User user = findByPublicIdOrThrow(publicId);
+        adminGuard.assertNotAdmin(user);
         user.setStatus(UserStatus.SUSPENDED);
         userRepository.save(user);
-    }
-
-    public UserResponseDto getById(Long id) {
-        return userRepository.findById(id)
-                .map(responseMapper)
-                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
     }
 
     public UserResponseDto getByPublicId(UUID publicId) {
@@ -127,9 +119,9 @@ public class UserService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, id));
+    public void delete(UUID publicId) {
+        User user = findByPublicIdOrThrow(publicId);
+        adminGuard.assertNotAdmin(user);
         user.delete();
         userRepository.save(user);
     }
@@ -147,12 +139,15 @@ public class UserService {
 
         userValidator.validateEmailUpdate(user.getId(), dto.email(), user.getEmail());
 
-        if (dto.email() != null) {
-            user.setEmail(dto.email());
-        }
+        profilePatchMapper.apply(dto, user);
 
         User updatedUser = userRepository.save(user);
         return responseMapper.apply(updatedUser);
+    }
+
+    private User findByPublicIdOrThrow(UUID publicId) {
+        return userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.USER_NOT_FOUND, publicId));
     }
 
     private Set<Role> fetchRolesByIds(Set<Long> roleIds) {

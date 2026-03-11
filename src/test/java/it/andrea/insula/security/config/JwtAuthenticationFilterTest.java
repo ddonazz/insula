@@ -1,7 +1,7 @@
 package it.andrea.insula.security.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import it.andrea.insula.core.tenant.TenantContext;
+import it.andrea.insula.core.tenant.TenantContextHolder;
 import it.andrea.insula.security.JwtService;
 import it.andrea.insula.security.PermissionAuthority;
 import jakarta.servlet.FilterChain;
@@ -57,7 +57,7 @@ class JwtAuthenticationFilterTest {
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
-        TenantContext.clear();
+        TenantContextHolder.clear();
     }
 
     @Test
@@ -103,10 +103,10 @@ class JwtAuthenticationFilterTest {
         when(userDetailsService.loadUserByUsername("admin")).thenReturn(userDetails);
         when(jwtService.extractClaim(eq(token), any(Function.class))).thenReturn(tenantId.toString());
 
-        // Catturiamo il TenantContext durante l'esecuzione del filtro
+        // Catturiamo il TenantContextHolder durante l'esecuzione del filtro
         final UUID[] capturedTenant = new UUID[1];
         doAnswer(invocation -> {
-            capturedTenant[0] = TenantContext.getTenantId();
+            capturedTenant[0] = TenantContextHolder.getTenantId();
             return null;
         }).when(filterChain).doFilter(request, response);
 
@@ -116,7 +116,7 @@ class JwtAuthenticationFilterTest {
         assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("admin");
         assertThat(capturedTenant[0]).isEqualTo(tenantId);
         // Dopo il filtro il contesto deve essere pulito
-        assertThat(TenantContext.getTenantId()).isNull();
+        assertThat(TenantContextHolder.getTenantId()).isNull();
     }
 
     @Test
@@ -137,7 +137,7 @@ class JwtAuthenticationFilterTest {
 
         final UUID[] capturedTenant = new UUID[1];
         doAnswer(invocation -> {
-            capturedTenant[0] = TenantContext.getTenantId();
+            capturedTenant[0] = TenantContextHolder.getTenantId();
             return null;
         }).when(filterChain).doFilter(request, response);
 
@@ -145,7 +145,7 @@ class JwtAuthenticationFilterTest {
 
         // Admin con X-Tenant-ID → usa il tenant impersonato
         assertThat(capturedTenant[0]).isEqualTo(impersonatedTenantId);
-        assertThat(TenantContext.getTenantId()).isNull(); // pulito nel finally
+        assertThat(TenantContextHolder.getTenantId()).isNull(); // pulito nel finally
     }
 
     @Test
@@ -167,7 +167,7 @@ class JwtAuthenticationFilterTest {
 
         final UUID[] capturedTenant = new UUID[1];
         doAnswer(invocation -> {
-            capturedTenant[0] = TenantContext.getTenantId();
+            capturedTenant[0] = TenantContextHolder.getTenantId();
             return null;
         }).when(filterChain).doFilter(request, response);
 
@@ -194,13 +194,13 @@ class JwtAuthenticationFilterTest {
 
         final UUID[] capturedTenant = new UUID[1];
         doAnswer(invocation -> {
-            capturedTenant[0] = TenantContext.getTenantId();
+            capturedTenant[0] = TenantContextHolder.getTenantId();
             return null;
         }).when(filterChain).doFilter(request, response);
 
         filter.doFilterInternal(request, response, filterChain);
 
-        // UUID non valido → entra nel catch, TenantContext non viene settato (resta null)
+        // UUID non valido → entra nel catch, TenantContextHolder non viene settato (resta null)
         assertThat(capturedTenant[0]).isNull();
     }
 
@@ -217,7 +217,7 @@ class JwtAuthenticationFilterTest {
         } catch (RuntimeException ignored) {
         }
 
-        assertThat(TenantContext.getTenantId()).isNull();
+        assertThat(TenantContextHolder.getTenantId()).isNull();
     }
 }
 

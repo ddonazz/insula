@@ -20,7 +20,6 @@ public class UserToUserResponseDtoMapper implements Function<User, UserResponseD
     @Override
     public UserResponseDto apply(User user) {
         return UserResponseDto.builder()
-                .id(user.getId())
                 .publicId(user.getPublicId())
                 .username(user.getUsername())
                 .email(user.getEmail())

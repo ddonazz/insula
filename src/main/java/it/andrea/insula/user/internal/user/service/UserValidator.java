@@ -1,7 +1,9 @@
 package it.andrea.insula.user.internal.user.service;
 
+import it.andrea.insula.core.exception.BusinessRuleException;
 import it.andrea.insula.core.exception.ResourceInUseException;
 import it.andrea.insula.user.internal.user.exception.UserErrorCodes;
+import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class UserValidator {
 
     private final UserRepository userRepository;
+    private final AdminGuard adminGuard;
 
     public void validateCreate(String username, String email) {
         if (userRepository.existsByUsername(username)) {
@@ -41,5 +44,19 @@ public class UserValidator {
             }
         }
     }
-}
 
+    /**
+     * Validates tenant constraints for user creation.
+     * <p>
+     * Users created through the normal API are never system admins
+     * (the {@code systemAdmin} flag is {@code false} by default and
+     * is immutable at JPA level). Therefore, the only constraint is
+     * that non-admin users must <b>not</b> belong to the default tenant.
+     * </p>
+     */
+    public void validateTenantConstraints(User user) {
+        if (adminGuard.isDefaultTenant(user.getTenantId())) {
+            throw new BusinessRuleException(UserErrorCodes.INVALID_TENANT_FOR_USER);
+        }
+    }
+}

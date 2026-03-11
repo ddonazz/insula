@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
-public record UserUpdateDto(
+public record UserPatchDto(
 
         @Size(min = 5)
         String username,
@@ -20,3 +20,4 @@ public record UserUpdateDto(
 
 ) {
 }
+

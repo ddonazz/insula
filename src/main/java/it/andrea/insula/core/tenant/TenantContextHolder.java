@@ -2,7 +2,7 @@ package it.andrea.insula.core.tenant;
 
 import java.util.UUID;
 
-public class TenantContext {
+public class TenantContextHolder {
     private static final ThreadLocal<UUID> CURRENT_TENANT = new ThreadLocal<>();
 
     public static UUID getTenantId() {

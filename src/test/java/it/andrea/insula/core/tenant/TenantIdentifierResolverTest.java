@@ -13,7 +13,7 @@ class TenantIdentifierResolverTest {
 
     @AfterEach
     void tearDown() {
-        TenantContext.clear();
+        TenantContextHolder.clear();
     }
 
     @Test
@@ -27,7 +27,7 @@ class TenantIdentifierResolverTest {
     @Test
     void shouldReturnTenantIdFromContext() {
         UUID tenantId = UUID.randomUUID();
-        TenantContext.setTenantId(tenantId);
+        TenantContextHolder.setTenantId(tenantId);
 
         UUID result = resolver.resolveCurrentTenantIdentifier();
 
@@ -37,8 +37,8 @@ class TenantIdentifierResolverTest {
     @Test
     void shouldReturnDefaultAfterContextCleared() {
         UUID tenantId = UUID.randomUUID();
-        TenantContext.setTenantId(tenantId);
-        TenantContext.clear();
+        TenantContextHolder.setTenantId(tenantId);
+        TenantContextHolder.clear();
 
         UUID result = resolver.resolveCurrentTenantIdentifier();
 

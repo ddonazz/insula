@@ -30,9 +30,14 @@ La validazione deve essere gestita in modo rigoroso e separato:
   - **Patch/Update:** Per gli aggiornamenti parziali, implementa `java.util.function.BiFunction<RequestDto, Entity, Entity>`. Il mapper deve applicare i cambiamenti all'entità esistente in modo selettivo (null-safe), preservando i dati non presenti nella richiesta.
 
 ## 5. Standard Database e JPA
-- **BaseEntity:** Estendi sempre `it.andrea.insula.core.model.BaseEntity` per l'auditing.
-- **Doppia Chiave:** - `Long id` (@Id) per relazioni interne e performance.
-  - `UUID publicId` (@UuidGenerator) come identificativo pubblico esposto nei DTO.
+- **Gerarchia BaseEntity:** Le entità devono estendere le classi base appropriate per ereditare l'auditing e l'identificazione (es. `BaseEntity`, `TenantAwareBaseEntity`). Per facilitare i controlli di sicurezza, propaga coerentemente l'estensione di `TenantAwareBaseEntity` anche alle entità figlie strette (es. `CustomerAddress` appartenente a un `BusinessCustomer`).
+- **Doppia Chiave e publicId:** - `Long id` (@Id) è usato internamente per le relazioni a DB e per le performance.
+  - `UUID publicId` (@UuidGenerator) funge da identificatore opaco ed è l'unico da esporre nei DTO e nelle API REST (es. `/api/resource/{publicId}`).
+  - **Consistenza e DRY:** Centralizza la definizione del `publicId` nelle classi base (es. creando una `PublicBaseEntity` o aggiungendolo in `BaseEntity`) per evitare duplicazioni. Usa sempre la sintassi coerente: `@Column(name = "public_id", nullable = false, unique = true, updatable = false)`.
+  - **Eccezioni al publicId:** Le entità che possiedono già una chiave pubblica di business naturale (es. `Permission` con `authority`, o tabelle di dizionario/ruoli statici) possono omettere l'uso del `publicId` e utilizzare direttamente la chiave naturale.
+- **equals() e hashCode() (Fondamentale):**
+  - **MAI** basare `equals()` e `hashCode()` sull'`id` del database (`Long id`). Poiché l'ID primario viene generato solo dopo l'inserimento sul DB, il suo hash cambierebbe dopo la persistenza, causando bug critici e perdite di dati all'interno delle Collection (es. `HashSet`) di Hibernate.
+  - Utilizza **sempre e solo** il `publicId` (che viene istanziato in memoria da `@UuidGenerator` prima del salvataggio) oppure campi univoci di business (es. `email`, `username`, `authority`, `name`) per l'implementazione di `equals()` e `hashCode()`.
 
 ## 6. Sicurezza e Error Handling
 - **Autorizzazioni:** Ogni endpoint deve avere `@PreAuthorize("hasAuthority('domain:action')")`.

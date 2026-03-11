@@ -61,6 +61,16 @@ public class GlobalExceptionHandler {
         return buildLocalizedError(ex.getErrorDefinition(), ex.getArgs(), request, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(ImmutableResourceException.class)
+    public ResponseEntity<ErrorResponse> handleImmutableResourceException(ImmutableResourceException ex, HttpServletRequest request) {
+        return buildLocalizedError(ex.getErrorDefinition(), ex.getArgs(), request, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessRuleException(BusinessRuleException ex, HttpServletRequest request) {
+        return buildLocalizedError(ex.getErrorDefinition(), ex.getArgs(), request, HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
         return buildLocalizedError(CommonErrorCodes.BAD_CREDENTIALS, null, request, HttpStatus.UNAUTHORIZED); //

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity(name = "PropertyAddress")
@@ -50,4 +51,16 @@ public class PropertyAddress extends BaseEntity {
     private Double longitude;
 
     private String notes;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PropertyAddress that)) return false;
+        return Objects.equals(publicId, that.publicId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(publicId);
+    }
 }

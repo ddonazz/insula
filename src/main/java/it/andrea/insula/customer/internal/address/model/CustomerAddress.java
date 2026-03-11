@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity(name = "CustomerAddress")
@@ -52,11 +53,11 @@ public class CustomerAddress extends BaseEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof CustomerAddress address)) return false;
-        return id != null && id.equals(address.getId());
+        return Objects.equals(publicId, address.publicId);
     }
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return Objects.hashCode(publicId);
     }
 }

@@ -2,16 +2,20 @@ package it.andrea.insula.user.internal.user.service;
 
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.core.dto.TranslatedEnum;
+import it.andrea.insula.core.exception.ImmutableResourceException;
 import it.andrea.insula.core.exception.ResourceInUseException;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
 import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
+import it.andrea.insula.user.internal.user.dto.request.UserPatchDto;
 import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
 import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
-import it.andrea.insula.user.internal.user.dto.request.UserUpdateDto;
 import it.andrea.insula.user.internal.user.dto.response.UserResponseDto;
+import it.andrea.insula.user.internal.user.exception.UserErrorCodes;
 import it.andrea.insula.user.internal.user.mapper.UserCreateDtoToUserMapper;
+import it.andrea.insula.user.internal.user.mapper.UserPatchMapper;
+import it.andrea.insula.user.internal.user.mapper.UserProfilePatchMapper;
 import it.andrea.insula.user.internal.user.mapper.UserToUserResponseDtoMapper;
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
@@ -49,7 +53,13 @@ class UserServiceTest {
     @Mock
     private UserValidator userValidator;
     @Mock
+    private AdminGuard adminGuard;
+    @Mock
     private UserCreateDtoToUserMapper createMapper;
+    @Mock
+    private UserPatchMapper patchMapper;
+    @Mock
+    private UserProfilePatchMapper profilePatchMapper;
     @Mock
     private UserToUserResponseDtoMapper responseMapper;
 
@@ -73,7 +83,6 @@ class UserServiceTest {
         user.setRoles(new HashSet<>());
 
         responseDto = UserResponseDto.builder()
-                .id(1L)
                 .publicId(publicId)
                 .username("testuser")
                 .email("test@test.com")
@@ -96,6 +105,7 @@ class UserServiceTest {
         when(createMapper.apply(dto)).thenReturn(user);
         when(passwordEncoder.encode("password123")).thenReturn("encoded");
         when(roleRepository.findAllById(Set.of(1L))).thenReturn(List.of(role));
+        doNothing().when(userValidator).validateTenantConstraints(user);
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
@@ -104,13 +114,14 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.username()).isEqualTo("testuser");
         verify(userRepository).save(user);
+        verify(userValidator).validateTenantConstraints(user);
     }
 
     @Test
     void create_shouldThrowWhenUsernameAlreadyExists() {
         UserCreateDto dto = new UserCreateDto("testuser", "test@test.com", "password123", Set.of(1L));
 
-        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.USERNAME_ALREADY_EXISTS, "testuser"))
+        doThrow(new ResourceInUseException(UserErrorCodes.USERNAME_ALREADY_EXISTS, "testuser"))
                 .when(userValidator).validateCreate("testuser", "test@test.com");
 
         assertThatThrownBy(() -> userService.create(dto))
@@ -121,7 +132,7 @@ class UserServiceTest {
     void create_shouldThrowWhenEmailAlreadyExists() {
         UserCreateDto dto = new UserCreateDto("testuser", "test@test.com", "password123", Set.of(1L));
 
-        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.EMAIL_ALREADY_EXISTS, "test@test.com"))
+        doThrow(new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, "test@test.com"))
                 .when(userValidator).validateCreate("testuser", "test@test.com");
 
         assertThatThrownBy(() -> userService.create(dto))
@@ -143,99 +154,122 @@ class UserServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
-    // === UPDATE ===
+    // === PATCH ===
 
     @Test
-    void update_shouldUpdateUserSuccessfully() {
-        UserUpdateDto dto = new UserUpdateDto("newuser", "new@test.com", null, null);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    void patch_shouldPatchUserSuccessfully() {
+        UserPatchDto dto = new UserPatchDto("newuser", "new@test.com", null, null);
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
         doNothing().when(userValidator).validateUpdate(1L, "newuser", "testuser", "new@test.com", "test@test.com");
+        when(patchMapper.apply(dto, user)).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
-        UserResponseDto result = userService.update(1L, dto);
+        UserResponseDto result = userService.patch(publicId, dto);
 
         assertThat(result).isNotNull();
-        assertThat(user.getUsername()).isEqualTo("newuser");
-        assertThat(user.getEmail()).isEqualTo("new@test.com");
+        verify(patchMapper).apply(dto, user);
     }
 
     @Test
-    void update_shouldThrowWhenUserNotFound() {
-        UserUpdateDto dto = new UserUpdateDto("newuser", null, null, null);
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+    void patch_shouldThrowWhenUserNotFound() {
+        UUID unknownId = UUID.randomUUID();
+        UserPatchDto dto = new UserPatchDto("newuser", null, null, null);
+        when(userRepository.findByPublicId(unknownId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.update(99L, dto))
+        assertThatThrownBy(() -> userService.patch(unknownId, dto))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void update_shouldThrowWhenNewUsernameAlreadyTaken() {
-        UserUpdateDto dto = new UserUpdateDto("taken", null, null, null);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.USERNAME_ALREADY_EXISTS, "taken"))
+    void patch_shouldThrowWhenUserIsAdmin() {
+        UserPatchDto dto = new UserPatchDto("newuser", null, null, null);
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doThrow(new ImmutableResourceException(UserErrorCodes.ADMIN_USER_IMMUTABLE))
+                .when(adminGuard).assertNotAdmin(user);
+
+        assertThatThrownBy(() -> userService.patch(publicId, dto))
+                .isInstanceOf(ImmutableResourceException.class);
+    }
+
+    @Test
+    void patch_shouldThrowWhenNewUsernameAlreadyTaken() {
+        UserPatchDto dto = new UserPatchDto("taken", null, null, null);
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
+        doThrow(new ResourceInUseException(UserErrorCodes.USERNAME_ALREADY_EXISTS, "taken"))
                 .when(userValidator).validateUpdate(1L, "taken", "testuser", null, "test@test.com");
 
-        assertThatThrownBy(() -> userService.update(1L, dto))
+        assertThatThrownBy(() -> userService.patch(publicId, dto))
                 .isInstanceOf(ResourceInUseException.class);
     }
 
     @Test
-    void update_shouldThrowWhenNewEmailAlreadyTaken() {
-        UserUpdateDto dto = new UserUpdateDto(null, "taken@test.com", null, null);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.EMAIL_ALREADY_EXISTS, "taken@test.com"))
+    void patch_shouldThrowWhenNewEmailAlreadyTaken() {
+        UserPatchDto dto = new UserPatchDto(null, "taken@test.com", null, null);
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
+        doThrow(new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, "taken@test.com"))
                 .when(userValidator).validateUpdate(1L, null, "testuser", "taken@test.com", "test@test.com");
 
-        assertThatThrownBy(() -> userService.update(1L, dto))
+        assertThatThrownBy(() -> userService.patch(publicId, dto))
                 .isInstanceOf(ResourceInUseException.class);
     }
 
     @Test
-    void update_shouldUpdateStatus() {
-        UserUpdateDto dto = new UserUpdateDto(null, null, UserStatus.SUSPENDED, null);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    void patch_shouldDelegateStatusUpdateToMapper() {
+        UserPatchDto dto = new UserPatchDto(null, null, UserStatus.SUSPENDED, null);
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
         doNothing().when(userValidator).validateUpdate(1L, null, "testuser", null, "test@test.com");
+        when(patchMapper.apply(dto, user)).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
-        userService.update(1L, dto);
+        userService.patch(publicId, dto);
 
-        assertThat(user.getStatus()).isEqualTo(UserStatus.SUSPENDED);
+        verify(patchMapper).apply(dto, user);
     }
 
     @Test
-    void update_shouldSkipWhenUsernameNotChanged() {
-        UserUpdateDto dto = new UserUpdateDto("testuser", null, null, null);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    void patch_shouldDelegateToValidatorAndMapper() {
+        UserPatchDto dto = new UserPatchDto("testuser", null, null, null);
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
         doNothing().when(userValidator).validateUpdate(1L, "testuser", "testuser", null, "test@test.com");
+        when(patchMapper.apply(dto, user)).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
-        userService.update(1L, dto);
+        userService.patch(publicId, dto);
 
         verify(userValidator).validateUpdate(1L, "testuser", "testuser", null, "test@test.com");
+        verify(patchMapper).apply(dto, user);
+    }
+
+    @Test
+    void patch_shouldUpdateRolesWhenProvided() {
+        Role role = new Role();
+        role.setId(2L);
+        role.setName("ADMIN");
+        role.setPermissions(new HashSet<>());
+
+        UserPatchDto dto = new UserPatchDto(null, null, null, Set.of(2L));
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
+        doNothing().when(userValidator).validateUpdate(1L, null, "testuser", null, "test@test.com");
+        when(patchMapper.apply(dto, user)).thenReturn(user);
+        when(roleRepository.findAllById(Set.of(2L))).thenReturn(List.of(role));
+        when(userRepository.save(user)).thenReturn(user);
+        when(responseMapper.apply(user)).thenReturn(responseDto);
+
+        userService.patch(publicId, dto);
+
+        assertThat(user.getRoles()).containsExactly(role);
     }
 
     // === READ ===
-
-    @Test
-    void getById_shouldReturnUser() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(responseMapper.apply(user)).thenReturn(responseDto);
-
-        UserResponseDto result = userService.getById(1L);
-
-        assertThat(result.id()).isEqualTo(1L);
-    }
-
-    @Test
-    void getById_shouldThrowWhenNotFound() {
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.getById(99L))
-                .isInstanceOf(ResourceNotFoundException.class);
-    }
 
     @Test
     void getByPublicId_shouldReturnUser() {
@@ -245,6 +279,15 @@ class UserServiceTest {
         UserResponseDto result = userService.getByPublicId(publicId);
 
         assertThat(result.publicId()).isEqualTo(publicId);
+    }
+
+    @Test
+    void getByPublicId_shouldThrowWhenNotFound() {
+        UUID unknownId = UUID.randomUUID();
+        when(userRepository.findByPublicId(unknownId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.getByPublicId(unknownId))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
@@ -289,33 +332,66 @@ class UserServiceTest {
     @Test
     void activateUser_shouldSetStatusActive() {
         user.setStatus(UserStatus.SUSPENDED);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
         when(userRepository.save(user)).thenReturn(user);
 
-        userService.activateUser(1L);
+        userService.activateUser(publicId);
 
         assertThat(user.getStatus()).isEqualTo(UserStatus.ACTIVE);
     }
 
     @Test
+    void activateUser_shouldThrowWhenUserIsAdmin() {
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doThrow(new ImmutableResourceException(UserErrorCodes.ADMIN_USER_IMMUTABLE))
+                .when(adminGuard).assertNotAdmin(user);
+
+        assertThatThrownBy(() -> userService.activateUser(publicId))
+                .isInstanceOf(ImmutableResourceException.class);
+    }
+
+    @Test
     void suspendUser_shouldSetStatusSuspended() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
         when(userRepository.save(user)).thenReturn(user);
 
-        userService.suspendUser(1L);
+        userService.suspendUser(publicId);
 
         assertThat(user.getStatus()).isEqualTo(UserStatus.SUSPENDED);
     }
 
     @Test
+    void suspendUser_shouldThrowWhenUserIsAdmin() {
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doThrow(new ImmutableResourceException(UserErrorCodes.ADMIN_USER_IMMUTABLE))
+                .when(adminGuard).assertNotAdmin(user);
+
+        assertThatThrownBy(() -> userService.suspendUser(publicId))
+                .isInstanceOf(ImmutableResourceException.class);
+    }
+
+    @Test
     void delete_shouldSoftDeleteUser() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doNothing().when(adminGuard).assertNotAdmin(user);
         when(userRepository.save(user)).thenReturn(user);
 
-        userService.delete(1L);
+        userService.delete(publicId);
 
         assertThat(user.getStatus()).isEqualTo(UserStatus.DELETED);
         assertThat(user.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    void delete_shouldThrowWhenUserIsAdmin() {
+        when(userRepository.findByPublicId(publicId)).thenReturn(Optional.of(user));
+        doThrow(new ImmutableResourceException(UserErrorCodes.ADMIN_USER_IMMUTABLE))
+                .when(adminGuard).assertNotAdmin(user);
+
+        assertThatThrownBy(() -> userService.delete(publicId))
+                .isInstanceOf(ImmutableResourceException.class);
     }
 
     // === PROFILE ===
@@ -325,20 +401,21 @@ class UserServiceTest {
         UserProfileUpdateDto dto = new UserProfileUpdateDto("newemail@test.com");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         doNothing().when(userValidator).validateEmailUpdate(1L, "newemail@test.com", "test@test.com");
+        when(profilePatchMapper.apply(dto, user)).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
         when(responseMapper.apply(user)).thenReturn(responseDto);
 
         UserResponseDto result = userService.updateProfile("testuser", dto);
 
         assertThat(result).isNotNull();
-        assertThat(user.getEmail()).isEqualTo("newemail@test.com");
+        verify(profilePatchMapper).apply(dto, user);
     }
 
     @Test
     void updateProfile_shouldThrowWhenEmailTaken() {
         UserProfileUpdateDto dto = new UserProfileUpdateDto("taken@test.com");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
-        doThrow(new ResourceInUseException(it.andrea.insula.user.internal.user.exception.UserErrorCodes.EMAIL_ALREADY_EXISTS, "taken@test.com"))
+        doThrow(new ResourceInUseException(UserErrorCodes.EMAIL_ALREADY_EXISTS, "taken@test.com"))
                 .when(userValidator).validateEmailUpdate(1L, "taken@test.com", "test@test.com");
 
         assertThatThrownBy(() -> userService.updateProfile("testuser", dto))
