@@ -37,6 +37,16 @@ public enum PermissionAuthority {
     UNIT_UPDATE(Constants.UNIT_UPDATE, "Update unit", Domains.UNIT),
     UNIT_DELETE(Constants.UNIT_DELETE, "Delete unit", Domains.UNIT),
 
+    OWNER_READ(Constants.OWNER_READ, "Read owner", Domains.OWNER),
+    OWNER_CREATE(Constants.OWNER_CREATE, "Create owner", Domains.OWNER),
+    OWNER_UPDATE(Constants.OWNER_UPDATE, "Update owner", Domains.OWNER),
+    OWNER_DELETE(Constants.OWNER_DELETE, "Delete owner", Domains.OWNER),
+
+    AGREEMENT_READ(Constants.AGREEMENT_READ, "Read agreement", Domains.AGREEMENT),
+    AGREEMENT_CREATE(Constants.AGREEMENT_CREATE, "Create agreement", Domains.AGREEMENT),
+    AGREEMENT_UPDATE(Constants.AGREEMENT_UPDATE, "Update agreement", Domains.AGREEMENT),
+    AGREEMENT_DELETE(Constants.AGREEMENT_DELETE, "Delete agreement", Domains.AGREEMENT),
+
     ADMIN_ACCESS(Constants.ADMIN_ACCESS, "Admin access", Domains.ADMIN);
 
     private final String authority;
@@ -87,6 +97,16 @@ public enum PermissionAuthority {
         public static final String UNIT_UPDATE = "unit:update";
         public static final String UNIT_DELETE = "unit:delete";
 
+        public static final String OWNER_READ = "owner:read";
+        public static final String OWNER_CREATE = "owner:create";
+        public static final String OWNER_UPDATE = "owner:update";
+        public static final String OWNER_DELETE = "owner:delete";
+
+        public static final String AGREEMENT_READ = "agreement:read";
+        public static final String AGREEMENT_CREATE = "agreement:create";
+        public static final String AGREEMENT_UPDATE = "agreement:update";
+        public static final String AGREEMENT_DELETE = "agreement:delete";
+
         public static final String ADMIN_ACCESS = "admin:access";
     }
 
@@ -98,6 +118,8 @@ public enum PermissionAuthority {
         public static final String AGENCY = "AGENCY";
         public static final String PROPERTY = "PROPERTY";
         public static final String UNIT = "UNIT";
+        public static final String OWNER = "OWNER";
+        public static final String AGREEMENT = "AGREEMENT";
         public static final String ADMIN = "ADMIN";
     }
 }
