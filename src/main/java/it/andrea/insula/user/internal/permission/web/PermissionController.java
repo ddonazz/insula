@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.permission.dto.request.PermissionSearchCriteria;
+import it.andrea.insula.user.internal.permission.dto.response.PermissionDomainGroupResponseDto;
 import it.andrea.insula.user.internal.permission.dto.response.PermissionResponseDto;
 import it.andrea.insula.user.internal.permission.service.PermissionService;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,16 @@ public class PermissionController {
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PERMISSION_READ + "')")
     public ResponseEntity<List<PermissionResponseDto>> getList(@ParameterObject PermissionSearchCriteria criteria) {
         List<PermissionResponseDto> response = permissionService.getList(criteria);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Get all permissions grouped by domain")
+    @GetMapping("/grouped")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PERMISSION_READ + "')")
+    public ResponseEntity<List<PermissionDomainGroupResponseDto>> getGroupedByDomain(
+            @ParameterObject PermissionSearchCriteria criteria
+    ) {
+        List<PermissionDomainGroupResponseDto> response = permissionService.getGroupedByDomain(criteria);
         return ResponseEntity.ok(response);
     }
 }
