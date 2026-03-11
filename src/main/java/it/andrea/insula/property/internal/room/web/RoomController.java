@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.property.internal.room.dto.request.RoomCreateDto;
 import it.andrea.insula.property.internal.room.dto.request.RoomPatchDto;
+import it.andrea.insula.property.internal.room.dto.request.RoomUpdateDto;
 import it.andrea.insula.property.internal.room.dto.response.RoomResponseDto;
 import it.andrea.insula.property.internal.room.service.RoomService;
 import it.andrea.insula.security.PermissionAuthority;
@@ -70,9 +71,21 @@ public class RoomController {
             @PathVariable UUID propertyId,
             @PathVariable UUID unitId,
             @PathVariable UUID roomId,
-            @Validated @RequestBody RoomPatchDto dto
+            @Validated @RequestBody RoomUpdateDto dto
     ) {
         return ResponseEntity.ok(roomService.update(propertyId, unitId, roomId, dto));
+    }
+
+    @Operation(summary = "Patch an existing room")
+    @PatchMapping("/{roomId}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.UNIT_UPDATE + "')")
+    public ResponseEntity<RoomResponseDto> patch(
+            @PathVariable UUID propertyId,
+            @PathVariable UUID unitId,
+            @PathVariable UUID roomId,
+            @Validated @RequestBody RoomPatchDto dto
+    ) {
+        return ResponseEntity.ok(roomService.patch(propertyId, unitId, roomId, dto));
     }
 
     @Operation(summary = "Delete a room")

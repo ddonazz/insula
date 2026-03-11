@@ -5,11 +5,13 @@ import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.CustomerFilters;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerCreateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerPatchDto;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.individual.IndividualCustomerResponseDto;
 import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerCreateMapper;
 import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerPatchMapper;
 import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerResponseMapper;
+import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerUpdateMapper;
 import it.andrea.insula.customer.internal.customer.model.CustomerType;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomer;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomerRepository;
@@ -46,6 +48,8 @@ class IndividualCustomerServiceTest {
     private IndividualCustomerValidator validator;
     @Mock
     private IndividualCustomerCreateMapper createMapper;
+    @Mock
+    private IndividualCustomerUpdateMapper updateMapper;
     @Mock
     private IndividualCustomerPatchMapper patchMapper;
     @Mock
@@ -140,7 +144,7 @@ class IndividualCustomerServiceTest {
         );
 
         when(repository.findByPublicId(publicId)).thenReturn(Optional.of(customer));
-        when(patchMapper.apply(dto, customer)).thenReturn(customer);
+        when(updateMapper.apply(dto, customer)).thenReturn(customer);
         when(repository.save(customer)).thenReturn(customer);
         when(responseMapper.apply(customer)).thenReturn(responseDto);
 
@@ -148,6 +152,7 @@ class IndividualCustomerServiceTest {
 
         assertThat(result).isNotNull();
         verify(validator).validateUpdate(1L, "mario@rossi.it", "mario@rossi.it");
+        verify(updateMapper).apply(dto, customer);
     }
 
     @Test
@@ -159,6 +164,37 @@ class IndividualCustomerServiceTest {
         when(repository.findByPublicId(publicId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.update(publicId, dto))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patch_shouldPatchSuccessfully() {
+        IndividualCustomerPatchDto dto = new IndividualCustomerPatchDto(
+                "mario@rossi.it", null, null, null,
+                null, null, null, null
+        );
+
+        when(repository.findByPublicId(publicId)).thenReturn(Optional.of(customer));
+        when(patchMapper.apply(dto, customer)).thenReturn(customer);
+        when(repository.save(customer)).thenReturn(customer);
+        when(responseMapper.apply(customer)).thenReturn(responseDto);
+
+        IndividualCustomerResponseDto result = service.patch(publicId, dto);
+
+        assertThat(result).isNotNull();
+        verify(validator).validateUpdate(1L, "mario@rossi.it", "mario@rossi.it");
+        verify(patchMapper).apply(dto, customer);
+    }
+
+    @Test
+    void patch_shouldThrowWhenNotFound() {
+        IndividualCustomerPatchDto dto = new IndividualCustomerPatchDto(
+                null, null, null, null,
+                null, null, null, null
+        );
+        when(repository.findByPublicId(publicId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.patch(publicId, dto))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

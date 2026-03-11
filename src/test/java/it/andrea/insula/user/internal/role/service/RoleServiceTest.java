@@ -8,10 +8,13 @@ import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.permission.model.Permission;
 import it.andrea.insula.user.internal.permission.model.PermissionRepository;
 import it.andrea.insula.user.internal.role.dto.request.RoleCreateDto;
+import it.andrea.insula.user.internal.role.dto.request.RolePatchDto;
 import it.andrea.insula.user.internal.role.dto.request.RoleUpdateDto;
 import it.andrea.insula.user.internal.role.dto.response.RoleResponseDto;
 import it.andrea.insula.user.internal.role.mapper.RoleCreateDtoToRoleMapper;
+import it.andrea.insula.user.internal.role.mapper.RolePatchMapper;
 import it.andrea.insula.user.internal.role.mapper.RoleToRoleResponseDtoMapper;
+import it.andrea.insula.user.internal.role.mapper.RoleUpdateMapper;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
 import it.andrea.insula.user.internal.user.exception.UserErrorCodes;
@@ -49,6 +52,10 @@ class RoleServiceTest {
     private RoleToRoleResponseDtoMapper roleResponseMapper;
     @Mock
     private RoleCreateDtoToRoleMapper roleCreateMapper;
+    @Mock
+    private RoleUpdateMapper roleUpdateMapper;
+    @Mock
+    private RolePatchMapper rolePatchMapper;
 
     @InjectMocks
     private RoleService roleService;
@@ -126,19 +133,25 @@ class RoleServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
+    // === UPDATE (PUT) ===
+
     @Test
     void updateRole_shouldUpdateSuccessfully() {
-        RoleUpdateDto dto = new RoleUpdateDto("SUPERADMIN", "Super admin", null);
+        RoleUpdateDto dto = RoleUpdateDto.builder().name("SUPERADMIN").description("Super admin").permissions(Set.of(1L)).build();
+        Permission perm = Permission.builder().id(1L).authority(PermissionAuthority.Constants.USER_READ).description("Read").domain(PermissionAuthority.Domains.USER).build();
+
         when(roleRepository.findByName("MANAGER")).thenReturn(Optional.of(role));
         doNothing().when(roleValidator).validateNotAssignedToAdmin(role);
         doNothing().when(roleValidator).validateUpdate(1L, "SUPERADMIN", "MANAGER");
+        when(roleUpdateMapper.apply(dto, role)).thenReturn(role);
+        when(permissionRepository.findAllById(Set.of(1L))).thenReturn(List.of(perm));
         when(roleRepository.save(role)).thenReturn(role);
         when(roleResponseMapper.apply(role)).thenReturn(responseDto);
 
         RoleResponseDto result = roleService.updateRole("MANAGER", dto);
 
         assertThat(result).isNotNull();
-        assertThat(role.getName()).isEqualTo("SUPERADMIN");
+        verify(roleUpdateMapper).apply(dto, role);
     }
 
     @Test
@@ -147,7 +160,7 @@ class RoleServiceTest {
         adminUser.setSystemAdmin(true);
         role.getUsers().add(adminUser);
 
-        RoleUpdateDto dto = new RoleUpdateDto("RENAMED", null, null);
+        RoleUpdateDto dto = RoleUpdateDto.builder().name("RENAMED").permissions(Set.of()).build();
         when(roleRepository.findByName("MANAGER")).thenReturn(Optional.of(role));
         doThrow(new ImmutableResourceException(UserErrorCodes.ADMIN_ROLE_IMMUTABLE))
                 .when(roleValidator).validateNotAssignedToAdmin(role);
@@ -158,7 +171,7 @@ class RoleServiceTest {
 
     @Test
     void updateRole_shouldThrowWhenNameTaken() {
-        RoleUpdateDto dto = new RoleUpdateDto("TAKEN", null, null);
+        RoleUpdateDto dto = RoleUpdateDto.builder().name("TAKEN").permissions(Set.of()).build();
         when(roleRepository.findByName("MANAGER")).thenReturn(Optional.of(role));
         doNothing().when(roleValidator).validateNotAssignedToAdmin(role);
         doThrow(new ResourceInUseException(UserErrorCodes.ROLE_NAME_EXISTS, "TAKEN"))
@@ -168,19 +181,55 @@ class RoleServiceTest {
                 .isInstanceOf(ResourceInUseException.class);
     }
 
+    // === PATCH ===
+
     @Test
-    void updateRole_shouldSkipNameCheckWhenUnchanged() {
-        RoleUpdateDto dto = new RoleUpdateDto("MANAGER", "Updated desc", null);
+    void patchRole_shouldPatchSuccessfully() {
+        RolePatchDto dto = RolePatchDto.builder().name("SUPERADMIN").description("Super admin").build();
         when(roleRepository.findByName("MANAGER")).thenReturn(Optional.of(role));
         doNothing().when(roleValidator).validateNotAssignedToAdmin(role);
-        doNothing().when(roleValidator).validateUpdate(1L, "MANAGER", "MANAGER");
+        doNothing().when(roleValidator).validateUpdate(1L, "SUPERADMIN", "MANAGER");
+        when(rolePatchMapper.apply(dto, role)).thenReturn(role);
         when(roleRepository.save(role)).thenReturn(role);
         when(roleResponseMapper.apply(role)).thenReturn(responseDto);
 
-        roleService.updateRole("MANAGER", dto);
+        RoleResponseDto result = roleService.patchRole("MANAGER", dto);
 
-        assertThat(role.getDescription()).isEqualTo("Updated desc");
+        assertThat(result).isNotNull();
+        verify(rolePatchMapper).apply(dto, role);
     }
+
+    @Test
+    void patchRole_shouldThrowWhenRoleAssignedToAdmin() {
+        User adminUser = new User();
+        adminUser.setSystemAdmin(true);
+        role.getUsers().add(adminUser);
+
+        RolePatchDto dto = RolePatchDto.builder().name("RENAMED").build();
+        when(roleRepository.findByName("MANAGER")).thenReturn(Optional.of(role));
+        doThrow(new ImmutableResourceException(UserErrorCodes.ADMIN_ROLE_IMMUTABLE))
+                .when(roleValidator).validateNotAssignedToAdmin(role);
+
+        assertThatThrownBy(() -> roleService.patchRole("MANAGER", dto))
+                .isInstanceOf(ImmutableResourceException.class);
+    }
+
+    @Test
+    void patchRole_shouldSkipNameCheckWhenUnchanged() {
+        RolePatchDto dto = RolePatchDto.builder().name("MANAGER").description("Updated desc").build();
+        when(roleRepository.findByName("MANAGER")).thenReturn(Optional.of(role));
+        doNothing().when(roleValidator).validateNotAssignedToAdmin(role);
+        doNothing().when(roleValidator).validateUpdate(1L, "MANAGER", "MANAGER");
+        when(rolePatchMapper.apply(dto, role)).thenReturn(role);
+        when(roleRepository.save(role)).thenReturn(role);
+        when(roleResponseMapper.apply(role)).thenReturn(responseDto);
+
+        roleService.patchRole("MANAGER", dto);
+
+        verify(rolePatchMapper).apply(dto, role);
+    }
+
+    // === DELETE ===
 
     @Test
     void deleteRole_shouldDeleteSuccessfully() {

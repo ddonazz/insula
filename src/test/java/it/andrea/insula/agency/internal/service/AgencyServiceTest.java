@@ -1,12 +1,14 @@
 package it.andrea.insula.agency.internal.service;
 
 import it.andrea.insula.agency.internal.dto.request.AgencyCreateDto;
+import it.andrea.insula.agency.internal.dto.request.AgencyPatchDto;
 import it.andrea.insula.agency.internal.dto.request.AgencySearchCriteria;
 import it.andrea.insula.agency.internal.dto.request.AgencyUpdateDto;
 import it.andrea.insula.agency.internal.dto.response.AgencyResponseDto;
 import it.andrea.insula.agency.internal.mapper.AgencyCreateDtoToAgencyMapper;
 import it.andrea.insula.agency.internal.mapper.AgencyPatchMapper;
 import it.andrea.insula.agency.internal.mapper.AgencyToAgencyResponseDtoMapper;
+import it.andrea.insula.agency.internal.mapper.AgencyUpdateMapper;
 import it.andrea.insula.agency.internal.model.Agency;
 import it.andrea.insula.agency.internal.model.AgencyRepository;
 import it.andrea.insula.agency.internal.model.AgencyStatus;
@@ -47,6 +49,9 @@ class AgencyServiceTest {
 
     @Mock
     private AgencyCreateDtoToAgencyMapper createMapper;
+
+    @Mock
+    private AgencyUpdateMapper updateMapper;
 
     @Mock
     private AgencyPatchMapper patchMapper;
@@ -186,27 +191,28 @@ class AgencyServiceTest {
     @Test
     void update_shouldUpdateAgencySuccessfully() {
         AgencyUpdateDto updateDto = new AgencyUpdateDto(
-                "Updated Agency", null, null, null,
-                null, null, null, null, null, null, null
+                "Updated Agency", "12345678901", null, null,
+                "pec@agency.com", "test@agency.com", null, null, null, "Europe/Rome", AgencyStatus.ACTIVE
         );
 
         when(agencyRepository.findByPublicId(publicId)).thenReturn(Optional.of(agency));
-        doNothing().when(agencyValidator).validateUpdate(1L, null, "12345678901", null, "pec@agency.com");
-        when(patchMapper.apply(updateDto, agency)).thenReturn(agency);
+        doNothing().when(agencyValidator).validateUpdate(1L, "12345678901", "12345678901", "pec@agency.com", "pec@agency.com");
+        when(updateMapper.apply(updateDto, agency)).thenReturn(agency);
         when(agencyRepository.save(agency)).thenReturn(agency);
         when(responseMapper.apply(agency)).thenReturn(responseDto);
 
         AgencyResponseDto result = agencyService.update(publicId, updateDto);
 
         assertThat(result).isNotNull();
+        verify(updateMapper).apply(updateDto, agency);
         verify(agencyRepository).save(agency);
     }
 
     @Test
     void update_shouldThrowWhenNotFound() {
         AgencyUpdateDto updateDto = new AgencyUpdateDto(
-                "Updated", null, null, null,
-                null, null, null, null, null, null, null
+                "Updated", "12345678901", null, null,
+                null, "test@agency.com", null, null, null, "Europe/Rome", AgencyStatus.ACTIVE
         );
 
         when(agencyRepository.findByPublicId(publicId)).thenReturn(Optional.empty());
@@ -216,8 +222,41 @@ class AgencyServiceTest {
     }
 
     @Test
-    void update_shouldThrowWhenVatNumberInUse() {
-        AgencyUpdateDto updateDto = new AgencyUpdateDto(
+    void patch_shouldPatchAgencySuccessfully() {
+        AgencyPatchDto patchDto = new AgencyPatchDto(
+                "Updated Agency", null, null, null,
+                null, null, null, null, null, null, null
+        );
+
+        when(agencyRepository.findByPublicId(publicId)).thenReturn(Optional.of(agency));
+        doNothing().when(agencyValidator).validateUpdate(1L, null, "12345678901", null, "pec@agency.com");
+        when(patchMapper.apply(patchDto, agency)).thenReturn(agency);
+        when(agencyRepository.save(agency)).thenReturn(agency);
+        when(responseMapper.apply(agency)).thenReturn(responseDto);
+
+        AgencyResponseDto result = agencyService.patch(publicId, patchDto);
+
+        assertThat(result).isNotNull();
+        verify(patchMapper).apply(patchDto, agency);
+        verify(agencyRepository).save(agency);
+    }
+
+    @Test
+    void patch_shouldThrowWhenNotFound() {
+        AgencyPatchDto patchDto = new AgencyPatchDto(
+                "Updated", null, null, null,
+                null, null, null, null, null, null, null
+        );
+
+        when(agencyRepository.findByPublicId(publicId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> agencyService.patch(publicId, patchDto))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patch_shouldThrowWhenVatNumberInUse() {
+        AgencyPatchDto patchDto = new AgencyPatchDto(
                 null, "99999999999", null, null,
                 null, null, null, null, null, null, null
         );
@@ -226,13 +265,13 @@ class AgencyServiceTest {
         doThrow(new ResourceInUseException(it.andrea.insula.agency.internal.exception.AgencyErrorCodes.VAT_NUMBER_ALREADY_EXISTS, "99999999999"))
                 .when(agencyValidator).validateUpdate(1L, "99999999999", "12345678901", null, "pec@agency.com");
 
-        assertThatThrownBy(() -> agencyService.update(publicId, updateDto))
+        assertThatThrownBy(() -> agencyService.patch(publicId, patchDto))
                 .isInstanceOf(ResourceInUseException.class);
     }
 
     @Test
-    void update_shouldThrowWhenPecEmailInUse() {
-        AgencyUpdateDto updateDto = new AgencyUpdateDto(
+    void patch_shouldThrowWhenPecEmailInUse() {
+        AgencyPatchDto patchDto = new AgencyPatchDto(
                 null, null, null, null,
                 "other@pec.it", null, null, null, null, null, null
         );
@@ -241,7 +280,7 @@ class AgencyServiceTest {
         doThrow(new ResourceInUseException(it.andrea.insula.agency.internal.exception.AgencyErrorCodes.PEC_EMAIL_ALREADY_EXISTS, "other@pec.it"))
                 .when(agencyValidator).validateUpdate(1L, null, "12345678901", "other@pec.it", "pec@agency.com");
 
-        assertThatThrownBy(() -> agencyService.update(publicId, updateDto))
+        assertThatThrownBy(() -> agencyService.patch(publicId, patchDto))
                 .isInstanceOf(ResourceInUseException.class);
     }
 
@@ -265,5 +304,4 @@ class AgencyServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 }
-
 

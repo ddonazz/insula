@@ -1,7 +1,7 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
 import it.andrea.insula.customer.internal.address.mapper.CustomerAddressPatchMapper;
-import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerUpdateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerPatchDto;
 import it.andrea.insula.customer.internal.customer.model.BusinessCustomer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -10,12 +10,12 @@ import java.util.function.BiFunction;
 
 @Component
 @RequiredArgsConstructor
-public class BusinessCustomerPatchMapper implements BiFunction<BusinessCustomerUpdateDto, BusinessCustomer, BusinessCustomer> {
+public class BusinessCustomerPatchMapper implements BiFunction<BusinessCustomerPatchDto, BusinessCustomer, BusinessCustomer> {
 
     private final CustomerAddressPatchMapper addressPatchMapper;
 
     @Override
-    public BusinessCustomer apply(BusinessCustomerUpdateDto dto, BusinessCustomer customer) {
+    public BusinessCustomer apply(BusinessCustomerPatchDto dto, BusinessCustomer customer) {
         if (dto.email() != null) {
             customer.setEmail(dto.email());
         }

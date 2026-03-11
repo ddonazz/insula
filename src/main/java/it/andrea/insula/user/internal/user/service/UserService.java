@@ -4,16 +4,10 @@ import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
-import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
-import it.andrea.insula.user.internal.user.dto.request.UserPatchDto;
-import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
-import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
+import it.andrea.insula.user.internal.user.dto.request.*;
 import it.andrea.insula.user.internal.user.dto.response.UserResponseDto;
 import it.andrea.insula.user.internal.user.exception.UserErrorCodes;
-import it.andrea.insula.user.internal.user.mapper.UserCreateDtoToUserMapper;
-import it.andrea.insula.user.internal.user.mapper.UserPatchMapper;
-import it.andrea.insula.user.internal.user.mapper.UserProfilePatchMapper;
-import it.andrea.insula.user.internal.user.mapper.UserToUserResponseDtoMapper;
+import it.andrea.insula.user.internal.user.mapper.*;
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
 import it.andrea.insula.user.internal.user.model.UserSpecification;
@@ -43,6 +37,7 @@ public class UserService {
     private final AdminGuard adminGuard;
 
     private final UserCreateDtoToUserMapper createMapper;
+    private final UserUpdateMapper updateMapper;
     private final UserPatchMapper patchMapper;
     private final UserProfilePatchMapper profilePatchMapper;
     private final UserToUserResponseDtoMapper responseMapper;
@@ -61,6 +56,23 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return responseMapper.apply(savedUser);
+    }
+
+    @Transactional
+    public UserResponseDto update(UUID publicId, UserUpdateDto dto) {
+        User user = findByPublicIdOrThrow(publicId);
+
+        adminGuard.assertNotAdmin(user);
+
+        userValidator.validateUpdate(user.getId(), dto.username(), user.getUsername(), dto.email(), user.getEmail());
+
+        updateMapper.apply(dto, user);
+
+        Set<Role> roles = fetchRolesByIds(dto.roles());
+        user.setRoles(roles);
+
+        User updatedUser = userRepository.save(user);
+        return responseMapper.apply(updatedUser);
     }
 
     @Transactional

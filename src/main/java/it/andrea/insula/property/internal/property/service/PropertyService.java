@@ -5,11 +5,13 @@ import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.property.internal.property.dto.request.PropertyCreateDto;
 import it.andrea.insula.property.internal.property.dto.request.PropertyPatchDto;
 import it.andrea.insula.property.internal.property.dto.request.PropertySearchCriteria;
+import it.andrea.insula.property.internal.property.dto.request.PropertyUpdateDto;
 import it.andrea.insula.property.internal.property.dto.response.PropertyResponseDto;
 import it.andrea.insula.property.internal.property.exception.PropertyErrorCodes;
 import it.andrea.insula.property.internal.property.mapper.PropertyCreateMapper;
 import it.andrea.insula.property.internal.property.mapper.PropertyPatchMapper;
 import it.andrea.insula.property.internal.property.mapper.PropertyResponseMapper;
+import it.andrea.insula.property.internal.property.mapper.PropertyUpdateMapper;
 import it.andrea.insula.property.internal.property.model.Property;
 import it.andrea.insula.property.internal.property.model.PropertyRepository;
 import it.andrea.insula.property.internal.property.model.PropertySpecification;
@@ -31,6 +33,7 @@ public class PropertyService {
     private final PropertyRepository propertyRepository;
     private final PropertyValidator propertyValidator;
     private final PropertyCreateMapper createMapper;
+    private final PropertyUpdateMapper updateMapper;
     private final PropertyPatchMapper patchMapper;
     private final PropertyResponseMapper responseMapper;
 
@@ -43,7 +46,18 @@ public class PropertyService {
     }
 
     @Transactional
-    public PropertyResponseDto update(UUID publicId, PropertyPatchDto dto) {
+    public PropertyResponseDto update(UUID publicId, PropertyUpdateDto dto) {
+        Property property = propertyRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.PROPERTY_NOT_FOUND, publicId));
+
+        propertyValidator.validateUpdate(property.getId(), dto.name(), property.getName());
+        updateMapper.apply(dto, property);
+        Property updated = propertyRepository.save(property);
+        return responseMapper.apply(updated);
+    }
+
+    @Transactional
+    public PropertyResponseDto patch(UUID publicId, PropertyPatchDto dto) {
         Property property = propertyRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.PROPERTY_NOT_FOUND, publicId));
 
@@ -78,4 +92,3 @@ public class PropertyService {
         propertyRepository.delete(property);
     }
 }
-

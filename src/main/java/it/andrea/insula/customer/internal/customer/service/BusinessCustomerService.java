@@ -4,14 +4,12 @@ import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.customer.internal.customer.dto.request.CustomerFilters;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerCreateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerPatchDto;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.business.CustomerContactCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.business.BusinessCustomerResponseDto;
 import it.andrea.insula.customer.internal.customer.exception.CustomerErrorCodes;
-import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerCreateMapper;
-import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerPatchMapper;
-import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerResponseMapper;
-import it.andrea.insula.customer.internal.customer.mapper.CustomerContactCreateMapper;
+import it.andrea.insula.customer.internal.customer.mapper.*;
 import it.andrea.insula.customer.internal.customer.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +30,7 @@ public class BusinessCustomerService {
     private final CustomerContactRepository contactRepository;
     private final BusinessCustomerValidator validator;
     private final BusinessCustomerCreateMapper createMapper;
+    private final BusinessCustomerUpdateMapper updateMapper;
     private final BusinessCustomerPatchMapper patchMapper;
     private final BusinessCustomerResponseMapper responseMapper;
     private final CustomerContactCreateMapper contactCreateMapper;
@@ -46,6 +45,22 @@ public class BusinessCustomerService {
 
     @Transactional
     public BusinessCustomerResponseDto update(UUID publicId, BusinessCustomerUpdateDto dto) {
+        BusinessCustomer customer = repository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerErrorCodes.BUSINESS_NOT_FOUND, publicId));
+
+        validator.validateUpdate(
+                customer.getId(),
+                dto.email(), customer.getEmail(),
+                dto.vatNumber(), customer.getVatNumber(),
+                dto.fiscalCode(), customer.getFiscalCode()
+        );
+        updateMapper.apply(dto, customer);
+        BusinessCustomer updated = repository.save(customer);
+        return responseMapper.apply(updated);
+    }
+
+    @Transactional
+    public BusinessCustomerResponseDto patch(UUID publicId, BusinessCustomerPatchDto dto) {
         BusinessCustomer customer = repository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException(CustomerErrorCodes.BUSINESS_NOT_FOUND, publicId));
 

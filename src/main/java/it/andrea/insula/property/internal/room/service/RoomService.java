@@ -4,10 +4,12 @@ import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.property.internal.property.exception.PropertyErrorCodes;
 import it.andrea.insula.property.internal.room.dto.request.RoomCreateDto;
 import it.andrea.insula.property.internal.room.dto.request.RoomPatchDto;
+import it.andrea.insula.property.internal.room.dto.request.RoomUpdateDto;
 import it.andrea.insula.property.internal.room.dto.response.RoomResponseDto;
 import it.andrea.insula.property.internal.room.mapper.RoomCreateMapper;
 import it.andrea.insula.property.internal.room.mapper.RoomPatchMapper;
 import it.andrea.insula.property.internal.room.mapper.RoomResponseMapper;
+import it.andrea.insula.property.internal.room.mapper.RoomUpdateMapper;
 import it.andrea.insula.property.internal.room.model.Room;
 import it.andrea.insula.property.internal.room.model.RoomRepository;
 import it.andrea.insula.property.internal.unit.model.Unit;
@@ -28,6 +30,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final UnitRepository unitRepository;
     private final RoomCreateMapper createMapper;
+    private final RoomUpdateMapper updateMapper;
     private final RoomPatchMapper patchMapper;
     private final RoomResponseMapper responseMapper;
 
@@ -43,8 +46,20 @@ public class RoomService {
     }
 
     @Transactional
-    public RoomResponseDto update(UUID propertyPublicId, UUID unitPublicId, UUID roomPublicId, RoomPatchDto dto) {
-        // Verify unit belongs to property
+    public RoomResponseDto update(UUID propertyPublicId, UUID unitPublicId, UUID roomPublicId, RoomUpdateDto dto) {
+        unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
+
+        Room room = roomRepository.findByPublicIdAndUnitPublicId(roomPublicId, unitPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.ROOM_NOT_FOUND, roomPublicId));
+
+        updateMapper.apply(dto, room);
+        Room updated = roomRepository.save(room);
+        return responseMapper.apply(updated);
+    }
+
+    @Transactional
+    public RoomResponseDto patch(UUID propertyPublicId, UUID unitPublicId, UUID roomPublicId, RoomPatchDto dto) {
         unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
 
@@ -57,7 +72,6 @@ public class RoomService {
     }
 
     public RoomResponseDto getByPublicId(UUID propertyPublicId, UUID unitPublicId, UUID roomPublicId) {
-        // Verify unit belongs to property
         unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
 
@@ -67,7 +81,6 @@ public class RoomService {
     }
 
     public List<RoomResponseDto> findAllByUnit(UUID propertyPublicId, UUID unitPublicId) {
-        // Verify unit belongs to property
         unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
 
@@ -78,7 +91,6 @@ public class RoomService {
 
     @Transactional
     public void delete(UUID propertyPublicId, UUID unitPublicId, UUID roomPublicId) {
-        // Verify unit belongs to property
         unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
 
@@ -87,4 +99,3 @@ public class RoomService {
         roomRepository.delete(room);
     }
 }
-

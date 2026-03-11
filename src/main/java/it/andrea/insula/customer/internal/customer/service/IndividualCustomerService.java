@@ -4,12 +4,14 @@ import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.customer.internal.customer.dto.request.CustomerFilters;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerCreateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerPatchDto;
 import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.individual.IndividualCustomerResponseDto;
 import it.andrea.insula.customer.internal.customer.exception.CustomerErrorCodes;
 import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerCreateMapper;
 import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerPatchMapper;
 import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerResponseMapper;
+import it.andrea.insula.customer.internal.customer.mapper.IndividualCustomerUpdateMapper;
 import it.andrea.insula.customer.internal.customer.model.CustomerSpecification;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomer;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomerRepository;
@@ -31,6 +33,7 @@ public class IndividualCustomerService {
     private final IndividualCustomerRepository repository;
     private final IndividualCustomerValidator validator;
     private final IndividualCustomerCreateMapper createMapper;
+    private final IndividualCustomerUpdateMapper updateMapper;
     private final IndividualCustomerPatchMapper patchMapper;
     private final IndividualCustomerResponseMapper responseMapper;
 
@@ -44,6 +47,17 @@ public class IndividualCustomerService {
 
     @Transactional
     public IndividualCustomerResponseDto update(UUID publicId, IndividualCustomerUpdateDto dto) {
+        IndividualCustomer customer = repository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerErrorCodes.INDIVIDUAL_NOT_FOUND, publicId));
+
+        validator.validateUpdate(customer.getId(), dto.email(), customer.getEmail());
+        updateMapper.apply(dto, customer);
+        IndividualCustomer updated = repository.save(customer);
+        return responseMapper.apply(updated);
+    }
+
+    @Transactional
+    public IndividualCustomerResponseDto patch(UUID publicId, IndividualCustomerPatchDto dto) {
         IndividualCustomer customer = repository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException(CustomerErrorCodes.INDIVIDUAL_NOT_FOUND, publicId));
 

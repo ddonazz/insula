@@ -3,6 +3,7 @@ package it.andrea.insula.agency.internal.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.agency.internal.dto.request.AgencyCreateDto;
+import it.andrea.insula.agency.internal.dto.request.AgencyPatchDto;
 import it.andrea.insula.agency.internal.dto.request.AgencySearchCriteria;
 import it.andrea.insula.agency.internal.dto.request.AgencyUpdateDto;
 import it.andrea.insula.agency.internal.dto.response.AgencyResponseDto;
@@ -78,6 +79,14 @@ public class AgencyController {
     public ResponseEntity<AgencyResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody AgencyUpdateDto dto) {
         AgencyResponseDto updatedAgency = agencyService.update(publicId, dto);
         return ResponseEntity.ok(updatedAgency);
+    }
+
+    @Operation(summary = "Patch an existing agency")
+    @PatchMapping("/{publicId}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.AGENCY_UPDATE + "')")
+    public ResponseEntity<AgencyResponseDto> patch(@PathVariable UUID publicId, @Validated @RequestBody AgencyPatchDto dto) {
+        AgencyResponseDto patchedAgency = agencyService.patch(publicId, dto);
+        return ResponseEntity.ok(patchedAgency);
     }
 
     @Operation(summary = "Delete an agency")

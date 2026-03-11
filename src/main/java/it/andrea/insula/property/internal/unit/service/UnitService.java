@@ -6,10 +6,12 @@ import it.andrea.insula.property.internal.property.model.Property;
 import it.andrea.insula.property.internal.property.model.PropertyRepository;
 import it.andrea.insula.property.internal.unit.dto.request.UnitCreateDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitPatchDto;
+import it.andrea.insula.property.internal.unit.dto.request.UnitUpdateDto;
 import it.andrea.insula.property.internal.unit.dto.response.UnitResponseDto;
 import it.andrea.insula.property.internal.unit.mapper.UnitCreateMapper;
 import it.andrea.insula.property.internal.unit.mapper.UnitPatchMapper;
 import it.andrea.insula.property.internal.unit.mapper.UnitResponseMapper;
+import it.andrea.insula.property.internal.unit.mapper.UnitUpdateMapper;
 import it.andrea.insula.property.internal.unit.model.Unit;
 import it.andrea.insula.property.internal.unit.model.UnitRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class UnitService {
     private final PropertyRepository propertyRepository;
     private final UnitValidator unitValidator;
     private final UnitCreateMapper createMapper;
+    private final UnitUpdateMapper updateMapper;
     private final UnitPatchMapper patchMapper;
     private final UnitResponseMapper responseMapper;
 
@@ -46,7 +49,19 @@ public class UnitService {
     }
 
     @Transactional
-    public UnitResponseDto update(UUID propertyPublicId, UUID unitPublicId, UnitPatchDto dto) {
+    public UnitResponseDto update(UUID propertyPublicId, UUID unitPublicId, UnitUpdateDto dto) {
+        Unit unit = unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
+
+        unitValidator.validateUpdate(unit.getId(), dto.regionalIdentifierCode(), unit.getRegionalIdentifierCode());
+
+        updateMapper.apply(dto, unit);
+        Unit updated = unitRepository.save(unit);
+        return responseMapper.apply(updated);
+    }
+
+    @Transactional
+    public UnitResponseDto patch(UUID propertyPublicId, UUID unitPublicId, UnitPatchDto dto) {
         Unit unit = unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
                 .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
 

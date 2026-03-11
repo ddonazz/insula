@@ -7,10 +7,7 @@ import it.andrea.insula.customer.internal.customer.dto.request.CustomerFilters;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.business.CustomerContactCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.business.BusinessCustomerResponseDto;
-import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerCreateMapper;
-import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerPatchMapper;
-import it.andrea.insula.customer.internal.customer.mapper.BusinessCustomerResponseMapper;
-import it.andrea.insula.customer.internal.customer.mapper.CustomerContactCreateMapper;
+import it.andrea.insula.customer.internal.customer.mapper.*;
 import it.andrea.insula.customer.internal.customer.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +41,8 @@ class BusinessCustomerServiceTest {
     private BusinessCustomerValidator validator;
     @Mock
     private BusinessCustomerCreateMapper createMapper;
+    @Mock
+    private BusinessCustomerUpdateMapper updateMapper;
     @Mock
     private BusinessCustomerPatchMapper patchMapper;
     @Mock

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.customer.internal.customer.dto.request.CustomerFilters;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerCreateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerPatchDto;
 import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.dto.request.business.CustomerContactCreateDto;
 import it.andrea.insula.customer.internal.customer.dto.response.business.BusinessCustomerResponseDto;
@@ -73,6 +74,13 @@ public class BusinessCustomerController {
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_UPDATE + "')")
     public ResponseEntity<BusinessCustomerResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody BusinessCustomerUpdateDto dto) {
         return ResponseEntity.ok(service.update(publicId, dto));
+    }
+
+    @Operation(summary = "Patch an existing business customer")
+    @PatchMapping("/{publicId}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.CUSTOMER_UPDATE + "')")
+    public ResponseEntity<BusinessCustomerResponseDto> patch(@PathVariable UUID publicId, @Validated @RequestBody BusinessCustomerPatchDto dto) {
+        return ResponseEntity.ok(service.patch(publicId, dto));
     }
 
     @Operation(summary = "Delete a business customer")

@@ -1,6 +1,6 @@
 package it.andrea.insula.agency.internal.mapper;
 
-import it.andrea.insula.agency.internal.dto.request.AgencyUpdateDto;
+import it.andrea.insula.agency.internal.dto.request.AgencyPatchDto;
 import it.andrea.insula.agency.internal.model.Agency;
 import org.springframework.stereotype.Component;
 
@@ -8,10 +8,10 @@ import java.time.ZoneId;
 import java.util.function.BiFunction;
 
 @Component
-public class AgencyPatchMapper implements BiFunction<AgencyUpdateDto, Agency, Agency> {
+public class AgencyPatchMapper implements BiFunction<AgencyPatchDto, Agency, Agency> {
 
     @Override
-    public Agency apply(AgencyUpdateDto dto, Agency agency) {
+    public Agency apply(AgencyPatchDto dto, Agency agency) {
         if (dto.name() != null) {
             agency.setName(dto.name());
         }

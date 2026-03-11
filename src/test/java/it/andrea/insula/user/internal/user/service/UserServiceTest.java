@@ -13,10 +13,7 @@ import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
 import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
 import it.andrea.insula.user.internal.user.dto.response.UserResponseDto;
 import it.andrea.insula.user.internal.user.exception.UserErrorCodes;
-import it.andrea.insula.user.internal.user.mapper.UserCreateDtoToUserMapper;
-import it.andrea.insula.user.internal.user.mapper.UserPatchMapper;
-import it.andrea.insula.user.internal.user.mapper.UserProfilePatchMapper;
-import it.andrea.insula.user.internal.user.mapper.UserToUserResponseDtoMapper;
+import it.andrea.insula.user.internal.user.mapper.*;
 import it.andrea.insula.user.internal.user.model.User;
 import it.andrea.insula.user.internal.user.model.UserRepository;
 import it.andrea.insula.user.internal.user.model.UserStatus;
@@ -56,6 +53,8 @@ class UserServiceTest {
     private AdminGuard adminGuard;
     @Mock
     private UserCreateDtoToUserMapper createMapper;
+    @Mock
+    private UserUpdateMapper updateMapper;
     @Mock
     private UserPatchMapper patchMapper;
     @Mock

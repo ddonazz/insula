@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.security.PermissionAuthority;
 import it.andrea.insula.user.internal.role.dto.request.RoleCreateDto;
+import it.andrea.insula.user.internal.role.dto.request.RolePatchDto;
 import it.andrea.insula.user.internal.role.dto.request.RoleSearchCriteria;
 import it.andrea.insula.user.internal.role.dto.request.RoleUpdateDto;
 import it.andrea.insula.user.internal.role.dto.response.RoleResponseDto;
@@ -77,6 +78,14 @@ public class RoleController {
     public ResponseEntity<RoleResponseDto> update(@PathVariable String name, @Validated @RequestBody RoleUpdateDto dto) {
         RoleResponseDto updatedRole = roleService.updateRole(name, dto);
         return ResponseEntity.ok(updatedRole);
+    }
+
+    @Operation(summary = "Patch an existing role")
+    @PatchMapping("/{name}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_UPDATE + "')")
+    public ResponseEntity<RoleResponseDto> patch(@PathVariable String name, @Validated @RequestBody RolePatchDto dto) {
+        RoleResponseDto patchedRole = roleService.patchRole(name, dto);
+        return ResponseEntity.ok(patchedRole);
     }
 
     @Operation(summary = "Delete a role")

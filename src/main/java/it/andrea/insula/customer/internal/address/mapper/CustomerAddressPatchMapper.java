@@ -1,16 +1,16 @@
 package it.andrea.insula.customer.internal.address.mapper;
 
-import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressUpdateDto;
+import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressPatchDto;
 import it.andrea.insula.customer.internal.address.model.CustomerAddress;
 import org.springframework.stereotype.Component;
 
 import java.util.function.BiFunction;
 
 @Component
-public class CustomerAddressPatchMapper implements BiFunction<CustomerAddressUpdateDto, CustomerAddress, CustomerAddress> {
+public class CustomerAddressPatchMapper implements BiFunction<CustomerAddressPatchDto, CustomerAddress, CustomerAddress> {
 
     @Override
-    public CustomerAddress apply(CustomerAddressUpdateDto dto, CustomerAddress address) {
+    public CustomerAddress apply(CustomerAddressPatchDto dto, CustomerAddress address) {
         if (dto == null) {
             return address;
         }

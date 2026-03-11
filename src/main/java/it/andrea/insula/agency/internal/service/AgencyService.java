@@ -1,6 +1,7 @@
 package it.andrea.insula.agency.internal.service;
 
 import it.andrea.insula.agency.internal.dto.request.AgencyCreateDto;
+import it.andrea.insula.agency.internal.dto.request.AgencyPatchDto;
 import it.andrea.insula.agency.internal.dto.request.AgencySearchCriteria;
 import it.andrea.insula.agency.internal.dto.request.AgencyUpdateDto;
 import it.andrea.insula.agency.internal.dto.response.AgencyResponseDto;
@@ -8,6 +9,7 @@ import it.andrea.insula.agency.internal.exception.AgencyErrorCodes;
 import it.andrea.insula.agency.internal.mapper.AgencyCreateDtoToAgencyMapper;
 import it.andrea.insula.agency.internal.mapper.AgencyPatchMapper;
 import it.andrea.insula.agency.internal.mapper.AgencyToAgencyResponseDtoMapper;
+import it.andrea.insula.agency.internal.mapper.AgencyUpdateMapper;
 import it.andrea.insula.agency.internal.model.Agency;
 import it.andrea.insula.agency.internal.model.AgencyRepository;
 import it.andrea.insula.agency.internal.model.AgencySpecification;
@@ -31,6 +33,7 @@ public class AgencyService {
     private final AgencyRepository agencyRepository;
     private final AgencyValidator agencyValidator;
     private final AgencyCreateDtoToAgencyMapper createMapper;
+    private final AgencyUpdateMapper updateMapper;
     private final AgencyPatchMapper patchMapper;
     private final AgencyToAgencyResponseDtoMapper responseMapper;
 
@@ -44,8 +47,22 @@ public class AgencyService {
 
     @Transactional
     public AgencyResponseDto update(UUID publicId, AgencyUpdateDto dto) {
-        Agency agency = agencyRepository.findByPublicId(publicId)
-                .orElseThrow(() -> new ResourceNotFoundException(AgencyErrorCodes.AGENCY_NOT_FOUND, publicId));
+        Agency agency = findByPublicIdOrThrow(publicId);
+
+        agencyValidator.validateUpdate(
+                agency.getId(),
+                dto.vatNumber(), agency.getVatNumber(),
+                dto.pecEmail(), agency.getPecEmail()
+        );
+
+        updateMapper.apply(dto, agency);
+        Agency updatedAgency = agencyRepository.save(agency);
+        return responseMapper.apply(updatedAgency);
+    }
+
+    @Transactional
+    public AgencyResponseDto patch(UUID publicId, AgencyPatchDto dto) {
+        Agency agency = findByPublicIdOrThrow(publicId);
 
         agencyValidator.validateUpdate(
                 agency.getId(),
@@ -80,10 +97,14 @@ public class AgencyService {
 
     @Transactional
     public void delete(UUID publicId) {
-        Agency agency = agencyRepository.findByPublicId(publicId)
-                .orElseThrow(() -> new ResourceNotFoundException(AgencyErrorCodes.AGENCY_NOT_FOUND, publicId));
+        Agency agency = findByPublicIdOrThrow(publicId);
         agency.delete();
         agencyRepository.save(agency);
+    }
+
+    private Agency findByPublicIdOrThrow(UUID publicId) {
+        return agencyRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException(AgencyErrorCodes.AGENCY_NOT_FOUND, publicId));
     }
 }
 

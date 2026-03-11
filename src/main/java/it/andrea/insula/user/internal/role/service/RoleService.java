@@ -5,11 +5,14 @@ import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.user.internal.permission.model.Permission;
 import it.andrea.insula.user.internal.permission.model.PermissionRepository;
 import it.andrea.insula.user.internal.role.dto.request.RoleCreateDto;
+import it.andrea.insula.user.internal.role.dto.request.RolePatchDto;
 import it.andrea.insula.user.internal.role.dto.request.RoleSearchCriteria;
 import it.andrea.insula.user.internal.role.dto.request.RoleUpdateDto;
 import it.andrea.insula.user.internal.role.dto.response.RoleResponseDto;
 import it.andrea.insula.user.internal.role.mapper.RoleCreateDtoToRoleMapper;
+import it.andrea.insula.user.internal.role.mapper.RolePatchMapper;
 import it.andrea.insula.user.internal.role.mapper.RoleToRoleResponseDtoMapper;
+import it.andrea.insula.user.internal.role.mapper.RoleUpdateMapper;
 import it.andrea.insula.user.internal.role.model.Role;
 import it.andrea.insula.user.internal.role.model.RoleRepository;
 import it.andrea.insula.user.internal.role.model.RoleSpecification;
@@ -35,8 +38,10 @@ public class RoleService {
     private final PermissionRepository permissionRepository;
     private final RoleValidator roleValidator;
 
-    private final RoleToRoleResponseDtoMapper roleToRoleResponseDtoMapper;
     private final RoleCreateDtoToRoleMapper roleCreateDtoToRoleMapper;
+    private final RoleUpdateMapper roleUpdateMapper;
+    private final RolePatchMapper rolePatchMapper;
+    private final RoleToRoleResponseDtoMapper roleToRoleResponseDtoMapper;
 
     @Transactional(readOnly = true)
     public RoleResponseDto getByName(String name) {
@@ -79,16 +84,25 @@ public class RoleService {
         Role role = retrieveRoleByName(name);
 
         roleValidator.validateNotAssignedToAdmin(role);
-
         roleValidator.validateUpdate(role.getId(), request.name(), role.getName());
 
-        if (request.name() != null) {
-            role.setName(request.name());
-        }
+        roleUpdateMapper.apply(request, role);
 
-        if (request.description() != null) {
-            role.setDescription(request.description());
-        }
+        Set<Permission> foundPermissions = computePermissions(request.permissions());
+        role.setPermissions(foundPermissions);
+
+        Role savedRole = roleRepository.save(role);
+        return roleToRoleResponseDtoMapper.apply(savedRole);
+    }
+
+    @Transactional
+    public RoleResponseDto patchRole(String name, RolePatchDto request) {
+        Role role = retrieveRoleByName(name);
+
+        roleValidator.validateNotAssignedToAdmin(role);
+        roleValidator.validateUpdate(role.getId(), request.name(), role.getName());
+
+        rolePatchMapper.apply(request, role);
 
         if (request.permissions() != null) {
             Set<Permission> foundPermissions = computePermissions(request.permissions());

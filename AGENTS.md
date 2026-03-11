@@ -23,11 +23,26 @@ La validazione deve essere gestita in modo rigoroso e separato:
 - **Livello Business (Validator Bean):** Per controlli complessi che richiedono accesso al database o logiche inter-entità (es. verifica unicità, vincoli di stato), crea un componente `@Component` denominato `[Domain]Validator`. Il Service invoca questo bean come primo step.
 - **Pattern Builder:** Per i `record` Java, utilizza l'annotazione `@Builder` di Lombok per facilitare la creazione di istanze nei test e nei mapper, garantendo comunque l'immutabilità.
 
-## 4. Web Layer e Mappers (Gestione PATCH)
-- **Immutabilità:** Usa esclusivamente `record` Java per i DTO.
+## 4. Web Layer e Mappers (Gestione PUT & PATCH)
+
+Per ogni dominio e sottodominio, è obbligatorio implementare sia la logica di aggiornamento totale (PUT) che quella parziale (PATCH).
+
+### 4.1. Strategie di Aggiornamento
+- **PUT (Full Update):** Sostituzione integrale dello stato dell'entità. Ogni campo del DTO sovrascrive il corrispondente campo dell'entità.
+- **PATCH (Partial Update):** Aggiornamento selettivo. Solo i campi presenti (non null) nel DTO devono essere applicati all'entità esistente.
+
+### 4.2. Regole di Implementazione
+- **Immutabilità:** Usa esclusivamente `record` Java per tutti i DTO.
 - **Mapping Funzionale (NO MapStruct):**
   - **Create/Response:** Implementa `java.util.function.Function<Source, Target>`.
-  - **Patch/Update:** Per gli aggiornamenti parziali, implementa `java.util.function.BiFunction<RequestDto, Entity, Entity>`. Il mapper deve applicare i cambiamenti all'entità esistente in modo selettivo (null-safe), preservando i dati non presenti nella richiesta.
+  - **Update (PUT):** Implementa `java.util.function.BiFunction<RequestDto, Entity, Entity>` per la sovrascrittura completa di tutti i campi (controllando sempre quali campi ovviamente, controllati dal validator).
+  - **Patch (PATCH):** Implementa `java.util.function.BiFunction<RequestDto, Entity, Entity>`. Il mapper deve applicare i cambiamenti all'entità esistente in modo selettivo (**null-safe**), preservando i dati originali se il campo nel DTO è null.
+    - *Esempio logica PATCH:* `if (dto.campo() != null) entity.setCampo(dto.campo());`
+
+### 4.3. Requisiti API
+Ogni risorsa deve esporre nel Controller:
+- Un endpoint `@PutMapping("/{id}")` che utilizza il mapper di update totale.
+- Un endpoint `@PatchMapping("/{id}")` che utilizza il mapper di update parziale (null-safe).
 
 ## 5. Standard Database e JPA
 - **Gerarchia BaseEntity:** Le entità devono estendere le classi base appropriate per ereditare l'auditing e l'identificazione (es. `BaseEntity`, `TenantAwareBaseEntity`). Per facilitare i controlli di sicurezza, propaga coerentemente l'estensione di `TenantAwareBaseEntity` anche alle entità figlie strette (es. `CustomerAddress` appartenente a un `BusinessCustomer`).
@@ -45,7 +60,7 @@ La validazione deve essere gestita in modo rigoroso e separato:
 
 ## 7. Workflow Operativo (Mandatorio)
 1. **Analisi:** Verifica la necessità di `@TenantId` e definisci i vincoli di validazione.
-2. **Pianificazione:** Elenca i file: Entity, Validator, Mappers (incluso BiFunction per PATCH), Service, Controller.
+2. **Pianificazione:** Elenca i file: Entity, Validator, Mappers, Service, Controller.
 3. **Implementazione:**
    - Applica `@Valid` nel Controller.
    - Implementa il **Validator** per i controlli di business.

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.property.internal.unit.dto.request.UnitCreateDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitPatchDto;
+import it.andrea.insula.property.internal.unit.dto.request.UnitUpdateDto;
 import it.andrea.insula.property.internal.unit.dto.response.UnitResponseDto;
 import it.andrea.insula.property.internal.unit.service.UnitService;
 import it.andrea.insula.security.PermissionAuthority;
@@ -64,9 +65,20 @@ public class UnitController {
     public ResponseEntity<UnitResponseDto> update(
             @PathVariable UUID propertyId,
             @PathVariable UUID unitId,
-            @Validated @RequestBody UnitPatchDto dto
+            @Validated @RequestBody UnitUpdateDto dto
     ) {
         return ResponseEntity.ok(unitService.update(propertyId, unitId, dto));
+    }
+
+    @Operation(summary = "Patch an existing unit")
+    @PatchMapping("/{unitId}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.UNIT_UPDATE + "')")
+    public ResponseEntity<UnitResponseDto> patch(
+            @PathVariable UUID propertyId,
+            @PathVariable UUID unitId,
+            @Validated @RequestBody UnitPatchDto dto
+    ) {
+        return ResponseEntity.ok(unitService.patch(propertyId, unitId, dto));
     }
 
     @Operation(summary = "Delete a unit")

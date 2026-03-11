@@ -6,6 +6,7 @@ import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.property.internal.property.dto.request.PropertyCreateDto;
 import it.andrea.insula.property.internal.property.dto.request.PropertyPatchDto;
 import it.andrea.insula.property.internal.property.dto.request.PropertySearchCriteria;
+import it.andrea.insula.property.internal.property.dto.request.PropertyUpdateDto;
 import it.andrea.insula.property.internal.property.dto.response.PropertyResponseDto;
 import it.andrea.insula.property.internal.property.service.PropertyService;
 import it.andrea.insula.security.PermissionAuthority;
@@ -70,8 +71,15 @@ public class PropertyController {
     @Operation(summary = "Update an existing property")
     @PutMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PROPERTY_UPDATE + "')")
-    public ResponseEntity<PropertyResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody PropertyPatchDto dto) {
+    public ResponseEntity<PropertyResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody PropertyUpdateDto dto) {
         return ResponseEntity.ok(propertyService.update(publicId, dto));
+    }
+
+    @Operation(summary = "Patch an existing property")
+    @PatchMapping("/{publicId}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PROPERTY_UPDATE + "')")
+    public ResponseEntity<PropertyResponseDto> patch(@PathVariable UUID publicId, @Validated @RequestBody PropertyPatchDto dto) {
+        return ResponseEntity.ok(propertyService.patch(publicId, dto));
     }
 
     @Operation(summary = "Delete a property")

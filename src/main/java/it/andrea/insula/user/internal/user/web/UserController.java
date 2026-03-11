@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.andrea.insula.core.dto.PageResponse;
 import it.andrea.insula.security.PermissionAuthority;
-import it.andrea.insula.user.internal.user.dto.request.UserCreateDto;
-import it.andrea.insula.user.internal.user.dto.request.UserPatchDto;
-import it.andrea.insula.user.internal.user.dto.request.UserProfileUpdateDto;
-import it.andrea.insula.user.internal.user.dto.request.UserSearchCriteria;
+import it.andrea.insula.user.internal.user.dto.request.*;
 import it.andrea.insula.user.internal.user.dto.response.UserResponseDto;
 import it.andrea.insula.user.internal.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +70,14 @@ public class UserController {
                 .toUri();
 
         return ResponseEntity.created(location).body(createdUser);
+    }
+
+    @Operation(summary = "Update an existing user")
+    @PutMapping("/{publicId}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.USER_UPDATE + "')")
+    public ResponseEntity<UserResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody UserUpdateDto dto) {
+        UserResponseDto updatedUser = userService.update(publicId, dto);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @Operation(summary = "Patch an existing user")
