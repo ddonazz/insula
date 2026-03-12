@@ -30,7 +30,7 @@ public class RoleValidator {
 
     public void validateDelete(Role role) {
         if (!role.getUsers().isEmpty()) {
-            throw new ResourceInUseException(UserErrorCodes.ROLE_IN_USE, role.getId());
+            throw new ResourceInUseException(UserErrorCodes.ROLE_IN_USE, role.getPublicId());
         }
     }
 

@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,8 +45,8 @@ public class RoleService {
     private final RoleToRoleResponseDtoMapper roleToRoleResponseDtoMapper;
 
     @Transactional(readOnly = true)
-    public RoleResponseDto getByName(String name) {
-        Role role = retrieveRoleByName(name);
+    public RoleResponseDto getByPublicId(UUID publicId) {
+        Role role = retrieveRoleByPublicId(publicId);
         return roleToRoleResponseDtoMapper.apply(role);
     }
 
@@ -80,8 +81,8 @@ public class RoleService {
     }
 
     @Transactional
-    public RoleResponseDto updateRole(String name, RoleUpdateDto request) {
-        Role role = retrieveRoleByName(name);
+    public RoleResponseDto updateRole(UUID publicId, RoleUpdateDto request) {
+        Role role = retrieveRoleByPublicId(publicId);
 
         roleValidator.validateNotAssignedToAdmin(role);
         roleValidator.validateUpdate(role.getId(), request.name(), role.getName());
@@ -96,8 +97,8 @@ public class RoleService {
     }
 
     @Transactional
-    public RoleResponseDto patchRole(String name, RolePatchDto request) {
-        Role role = retrieveRoleByName(name);
+    public RoleResponseDto patchRole(UUID publicId, RolePatchDto request) {
+        Role role = retrieveRoleByPublicId(publicId);
 
         roleValidator.validateNotAssignedToAdmin(role);
         roleValidator.validateUpdate(role.getId(), request.name(), role.getName());
@@ -114,16 +115,16 @@ public class RoleService {
     }
 
     @Transactional
-    public void deleteRole(String name) {
-        Role role = retrieveRoleByName(name);
+    public void deleteRole(UUID publicId) {
+        Role role = retrieveRoleByPublicId(publicId);
         roleValidator.validateNotAssignedToAdmin(role);
         roleValidator.validateDelete(role);
         roleRepository.delete(role);
     }
 
-    private Role retrieveRoleByName(String name) {
-        return roleRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.ROLE_NOT_FOUND, name));
+    private Role retrieveRoleByPublicId(UUID publicId) {
+        return roleRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException(UserErrorCodes.ROLE_NOT_FOUND, publicId));
     }
 
     private Set<Permission> computePermissions(Collection<Long> permissionIds) {

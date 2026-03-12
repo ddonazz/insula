@@ -22,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/roles")
@@ -31,11 +32,11 @@ public class RoleController {
 
     private final RoleService roleService;
 
-    @Operation(summary = "Get a role by name")
-    @GetMapping("/{name}")
+    @Operation(summary = "Get a role by public ID")
+    @GetMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_READ + "')")
-    public ResponseEntity<RoleResponseDto> getByName(@PathVariable String name) {
-        RoleResponseDto roleDto = roleService.getByName(name);
+    public ResponseEntity<RoleResponseDto> getByPublicId(@PathVariable UUID publicId) {
+        RoleResponseDto roleDto = roleService.getByPublicId(publicId);
         return ResponseEntity.ok(roleDto);
     }
 
@@ -65,34 +66,34 @@ public class RoleController {
         RoleResponseDto createdRole = roleService.createRole(dto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{name}")
-                .buildAndExpand(createdRole.name())
+                .path("/{publicId}")
+                .buildAndExpand(createdRole.publicId())
                 .toUri();
 
         return ResponseEntity.created(location).body(createdRole);
     }
 
     @Operation(summary = "Update an existing role")
-    @PutMapping("/{name}")
+    @PutMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_UPDATE + "')")
-    public ResponseEntity<RoleResponseDto> update(@PathVariable String name, @Validated @RequestBody RoleUpdateDto dto) {
-        RoleResponseDto updatedRole = roleService.updateRole(name, dto);
+    public ResponseEntity<RoleResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody RoleUpdateDto dto) {
+        RoleResponseDto updatedRole = roleService.updateRole(publicId, dto);
         return ResponseEntity.ok(updatedRole);
     }
 
     @Operation(summary = "Patch an existing role")
-    @PatchMapping("/{name}")
+    @PatchMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_UPDATE + "')")
-    public ResponseEntity<RoleResponseDto> patch(@PathVariable String name, @Validated @RequestBody RolePatchDto dto) {
-        RoleResponseDto patchedRole = roleService.patchRole(name, dto);
+    public ResponseEntity<RoleResponseDto> patch(@PathVariable UUID publicId, @Validated @RequestBody RolePatchDto dto) {
+        RoleResponseDto patchedRole = roleService.patchRole(publicId, dto);
         return ResponseEntity.ok(patchedRole);
     }
 
     @Operation(summary = "Delete a role")
-    @DeleteMapping("/{name}")
+    @DeleteMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.ROLE_DELETE + "')")
-    public ResponseEntity<Void> delete(@PathVariable String name) {
-        roleService.deleteRole(name);
+    public ResponseEntity<Void> delete(@PathVariable UUID publicId) {
+        roleService.deleteRole(publicId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -7,10 +7,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -22,6 +24,10 @@ public class Role extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_sequence")
     @SequenceGenerator(name = "role_sequence", sequenceName = "ROLE_SEQUENCE", allocationSize = 1)
     private Long id;
+
+    @UuidGenerator
+    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
+    private UUID publicId;
 
     @Column(unique = true, nullable = false)
     private String name;
@@ -43,12 +49,12 @@ public class Role extends BaseEntity {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Role role)) return false;
-        return Objects.equals(name, role.name);
+        return Objects.equals(publicId, role.publicId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(name);
+        return Objects.hashCode(publicId);
     }
 
 }
