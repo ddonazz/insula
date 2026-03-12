@@ -2,9 +2,11 @@ package it.andrea.insula.property.internal.unit.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.andrea.insula.property.internal.unit.dto.request.CadastralDataPatchDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitCreateDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitPatchDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitUpdateDto;
+import it.andrea.insula.property.internal.unit.dto.response.CadastralDataResponseDto;
 import it.andrea.insula.property.internal.unit.dto.response.UnitResponseDto;
 import it.andrea.insula.property.internal.unit.service.UnitService;
 import it.andrea.insula.security.PermissionAuthority;
@@ -90,6 +92,18 @@ public class UnitController {
     ) {
         unitService.delete(propertyId, unitId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Patch cadastral data of a unit")
+    @PatchMapping("/{unitId}/cadastral-data/{cadastralDataId}")
+    @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.UNIT_UPDATE + "')")
+    public ResponseEntity<CadastralDataResponseDto> patchCadastralData(
+            @PathVariable UUID propertyId,
+            @PathVariable UUID unitId,
+            @PathVariable UUID cadastralDataId,
+            @Validated @RequestBody CadastralDataPatchDto dto
+    ) {
+        return ResponseEntity.ok(unitService.patchCadastralData(propertyId, unitId, cadastralDataId, dto));
     }
 }
 

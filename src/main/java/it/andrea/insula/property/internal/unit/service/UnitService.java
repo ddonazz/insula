@@ -4,14 +4,19 @@ import it.andrea.insula.core.exception.ResourceNotFoundException;
 import it.andrea.insula.property.internal.property.exception.PropertyErrorCodes;
 import it.andrea.insula.property.internal.property.model.Property;
 import it.andrea.insula.property.internal.property.model.PropertyRepository;
+import it.andrea.insula.property.internal.unit.dto.request.CadastralDataPatchDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitCreateDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitPatchDto;
 import it.andrea.insula.property.internal.unit.dto.request.UnitUpdateDto;
+import it.andrea.insula.property.internal.unit.dto.response.CadastralDataResponseDto;
 import it.andrea.insula.property.internal.unit.dto.response.UnitResponseDto;
+import it.andrea.insula.property.internal.unit.mapper.CadastralDataPatchMapper;
+import it.andrea.insula.property.internal.unit.mapper.CadastralDataResponseMapper;
 import it.andrea.insula.property.internal.unit.mapper.UnitCreateMapper;
 import it.andrea.insula.property.internal.unit.mapper.UnitPatchMapper;
 import it.andrea.insula.property.internal.unit.mapper.UnitResponseMapper;
 import it.andrea.insula.property.internal.unit.mapper.UnitUpdateMapper;
+import it.andrea.insula.property.internal.unit.model.CadastralData;
 import it.andrea.insula.property.internal.unit.model.Unit;
 import it.andrea.insula.property.internal.unit.model.UnitRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +39,8 @@ public class UnitService {
     private final UnitUpdateMapper updateMapper;
     private final UnitPatchMapper patchMapper;
     private final UnitResponseMapper responseMapper;
+    private final CadastralDataPatchMapper cadastralDataPatchMapper;
+    private final CadastralDataResponseMapper cadastralDataResponseMapper;
 
     @Transactional
     public UnitResponseDto create(UUID propertyPublicId, UnitCreateDto dto) {
@@ -70,6 +77,26 @@ public class UnitService {
         patchMapper.apply(dto, unit);
         Unit updated = unitRepository.save(unit);
         return responseMapper.apply(updated);
+    }
+
+    @Transactional
+    public CadastralDataResponseDto patchCadastralData(
+            UUID propertyPublicId,
+            UUID unitPublicId,
+            UUID cadastralDataPublicId,
+            CadastralDataPatchDto dto
+    ) {
+        Unit unit = unitRepository.findByPublicIdAndPropertyPublicId(unitPublicId, propertyPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.UNIT_NOT_FOUND, unitPublicId));
+
+        CadastralData cadastralData = unit.getCadastralData().stream()
+                .filter(it -> cadastralDataPublicId.equals(it.getPublicId()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(PropertyErrorCodes.CADASTRAL_DATA_NOT_FOUND, cadastralDataPublicId));
+
+        cadastralDataPatchMapper.apply(dto, cadastralData);
+        unitRepository.save(unit);
+        return cadastralDataResponseMapper.apply(cadastralData);
     }
 
     public UnitResponseDto getByPublicId(UUID propertyPublicId, UUID unitPublicId) {

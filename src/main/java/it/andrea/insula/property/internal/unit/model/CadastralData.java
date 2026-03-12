@@ -22,7 +22,6 @@ public class CadastralData extends PublicBaseEntity {
     @SequenceGenerator(name = "cadastral_sequence", sequenceName = "CADASTRAL_SEQUENCE", allocationSize = 1)
     private Long id;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id", nullable = false)
     private Unit unit;
