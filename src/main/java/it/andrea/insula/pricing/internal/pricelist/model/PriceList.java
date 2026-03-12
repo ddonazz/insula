@@ -5,14 +5,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "price_lists")
@@ -26,9 +23,6 @@ public class PriceList extends TenantAwareBaseEntity {
     @SequenceGenerator(name = "price_list_sequence", sequenceName = "PRICE_LIST_SEQUENCE", allocationSize = 1)
     private Long id;
 
-    @UuidGenerator
-    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @Column(nullable = false)
     private String name;
@@ -64,17 +58,5 @@ public class PriceList extends TenantAwareBaseEntity {
     public void delete() {
         this.status = PriceListStatus.DELETED;
         this.deletedAt = Instant.now();
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PriceList that)) return false;
-        return Objects.equals(publicId, that.publicId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(publicId);
     }
 }

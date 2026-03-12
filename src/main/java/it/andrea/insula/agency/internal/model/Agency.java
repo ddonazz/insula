@@ -1,31 +1,26 @@
 package it.andrea.insula.agency.internal.model;
 
-import it.andrea.insula.core.model.BaseEntity;
+import it.andrea.insula.core.model.PublicBaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.UUID;
 
 @Entity
 @Table(name = "agencies")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Agency extends BaseEntity {
+public class Agency extends PublicBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "agency_sequence")
     @SequenceGenerator(name = "agency_sequence", sequenceName = "AGENCY_SEQUENCE", allocationSize = 1)
     private Long id;
 
-    @UuidGenerator
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @Column(nullable = false)
     private String name;

@@ -45,13 +45,20 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AgreementServiceTest {
 
-    @Mock private ManagementAgreementRepository agreementRepository;
-    @Mock private OwnerRepository ownerRepository;
-    @Mock private AgreementValidator validator;
-    @Mock private AgreementCreateMapper createMapper;
-    @Mock private AgreementUpdateMapper updateMapper;
-    @Mock private AgreementPatchMapper patchMapper;
-    @Mock private AgreementResponseMapper responseMapper;
+    @Mock
+    private ManagementAgreementRepository agreementRepository;
+    @Mock
+    private OwnerRepository ownerRepository;
+    @Mock
+    private AgreementValidator validator;
+    @Mock
+    private AgreementCreateMapper createMapper;
+    @Mock
+    private AgreementUpdateMapper updateMapper;
+    @Mock
+    private AgreementPatchMapper patchMapper;
+    @Mock
+    private AgreementResponseMapper responseMapper;
 
     @InjectMocks
     private AgreementService service;

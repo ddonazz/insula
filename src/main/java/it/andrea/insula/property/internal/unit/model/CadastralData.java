@@ -1,13 +1,10 @@
 package it.andrea.insula.property.internal.unit.model;
 
-import it.andrea.insula.core.model.BaseEntity;
+import it.andrea.insula.core.model.PublicBaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
-
-import java.util.UUID;
 
 @Entity
 @Table(
@@ -18,16 +15,13 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CadastralData extends BaseEntity {
+public class CadastralData extends PublicBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cadastral_sequence")
     @SequenceGenerator(name = "cadastral_sequence", sequenceName = "CADASTRAL_SEQUENCE", allocationSize = 1)
     private Long id;
 
-    @UuidGenerator
-    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id", nullable = false)

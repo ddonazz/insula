@@ -59,10 +59,12 @@ public class OwnerPatchMapper implements BiFunction<OwnerPatchDto, Owner, Owner>
             BankAccount bank = owner.getBankAccount() != null ? owner.getBankAccount() : new BankAccount();
             if (dto.bankAccount().iban() != null) bank.setIban(dto.bankAccount().iban());
             if (dto.bankAccount().swiftBic() != null) bank.setSwiftBic(dto.bankAccount().swiftBic());
-            if (dto.bankAccount().extraEuAccountNumber() != null) bank.setExtraEuAccountNumber(dto.bankAccount().extraEuAccountNumber());
+            if (dto.bankAccount().extraEuAccountNumber() != null)
+                bank.setExtraEuAccountNumber(dto.bankAccount().extraEuAccountNumber());
             if (dto.bankAccount().routingCode() != null) bank.setRoutingCode(dto.bankAccount().routingCode());
             if (dto.bankAccount().bankName() != null) bank.setBankName(dto.bankAccount().bankName());
-            if (dto.bankAccount().bankCountryCode() != null) bank.setBankCountryCode(dto.bankAccount().bankCountryCode());
+            if (dto.bankAccount().bankCountryCode() != null)
+                bank.setBankCountryCode(dto.bankAccount().bankCountryCode());
             if (dto.bankAccount().holderName() != null) bank.setHolderName(dto.bankAccount().holderName());
             owner.setBankAccount(bank);
         }

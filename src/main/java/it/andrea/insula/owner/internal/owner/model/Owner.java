@@ -5,11 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
 
 @Entity
 @Table(name = "owners")
@@ -23,9 +20,6 @@ public class Owner extends TenantAwareBaseEntity {
     @SequenceGenerator(name = "owner_sequence", sequenceName = "OWNER_SEQUENCE", allocationSize = 1)
     private Long id;
 
-    @UuidGenerator
-    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -67,17 +61,5 @@ public class Owner extends TenantAwareBaseEntity {
     public void delete() {
         this.status = OwnerStatus.DELETED;
         this.deletedAt = Instant.now();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Owner owner)) return false;
-        return Objects.equals(publicId, owner.publicId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(publicId);
     }
 }

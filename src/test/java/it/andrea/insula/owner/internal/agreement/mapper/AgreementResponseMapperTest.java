@@ -3,12 +3,7 @@ package it.andrea.insula.owner.internal.agreement.mapper;
 import it.andrea.insula.core.dto.EnumTranslator;
 import it.andrea.insula.core.dto.TranslatedEnum;
 import it.andrea.insula.owner.internal.agreement.dto.response.AgreementResponseDto;
-import it.andrea.insula.owner.internal.agreement.model.AgreementState;
-import it.andrea.insula.owner.internal.agreement.model.FinancialModel;
-import it.andrea.insula.owner.internal.agreement.model.FinancialTerms;
-import it.andrea.insula.owner.internal.agreement.model.ManagementAgreement;
-import it.andrea.insula.owner.internal.agreement.model.OperationalTerms;
-import it.andrea.insula.owner.internal.agreement.model.PaymentFrequency;
+import it.andrea.insula.owner.internal.agreement.model.*;
 import it.andrea.insula.owner.internal.owner.model.Owner;
 import it.andrea.insula.property.PropertyQueryService;
 import it.andrea.insula.property.UnitSummary;
@@ -29,8 +24,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AgreementResponseMapperTest {
 
-    @Mock private EnumTranslator enumTranslator;
-    @Mock private PropertyQueryService propertyQueryService;
+    @Mock
+    private EnumTranslator enumTranslator;
+    @Mock
+    private PropertyQueryService propertyQueryService;
 
     private AgreementResponseMapper mapper;
     private ManagementAgreement agreement;

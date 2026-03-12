@@ -38,18 +38,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RateServiceTest {
 
-    @Mock private UnitRatePeriodRepository rateRepository;
-    @Mock private PriceListRepository priceListRepository;
-    @Mock private RateValidator validator;
-    @Mock private RateCreateMapper createMapper;
-    @Mock private RateUpdateMapper updateMapper;
-    @Mock private RatePatchMapper patchMapper;
-    @Mock private RateResponseMapper responseMapper;
+    @Mock
+    private UnitRatePeriodRepository rateRepository;
+    @Mock
+    private PriceListRepository priceListRepository;
+    @Mock
+    private RateValidator validator;
+    @Mock
+    private RateCreateMapper createMapper;
+    @Mock
+    private RateUpdateMapper updateMapper;
+    @Mock
+    private RatePatchMapper patchMapper;
+    @Mock
+    private RateResponseMapper responseMapper;
 
     @InjectMocks
     private RateService service;

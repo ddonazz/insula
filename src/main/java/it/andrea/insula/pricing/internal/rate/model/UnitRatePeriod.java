@@ -6,13 +6,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,9 +26,6 @@ public class UnitRatePeriod extends TenantAwareBaseEntity {
     @SequenceGenerator(name = "unit_rate_period_sequence", sequenceName = "UNIT_RATE_PERIOD_SEQUENCE", allocationSize = 1)
     private Long id;
 
-    @UuidGenerator
-    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "price_list_id", nullable = false)
@@ -75,16 +70,4 @@ public class UnitRatePeriod extends TenantAwareBaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week")
     private Set<DayOfWeek> allowedCheckOutDays = new HashSet<>();
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UnitRatePeriod that)) return false;
-        return Objects.equals(publicId, that.publicId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(publicId);
-    }
 }

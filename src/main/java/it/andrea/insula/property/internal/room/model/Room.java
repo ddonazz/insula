@@ -6,12 +6,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "rooms")
@@ -24,10 +21,6 @@ public class Room extends TenantAwareBaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "room_sequence")
     @SequenceGenerator(name = "room_sequence", sequenceName = "ROOM_SEQUENCE", allocationSize = 1)
     private Long id;
-
-    @UuidGenerator
-    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id", nullable = false)
@@ -43,16 +36,4 @@ public class Room extends TenantAwareBaseEntity {
     @CollectionTable(name = "room_features", joinColumns = @JoinColumn(name = "room_id"))
     @Column(name = "feature")
     private Set<String> features = new HashSet<>();
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Room room)) return false;
-        return Objects.equals(publicId, room.publicId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(publicId);
-    }
 }

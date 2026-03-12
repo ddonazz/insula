@@ -44,7 +44,7 @@ public class UnitService {
 
         Unit unit = createMapper.apply(dto);
         unit.setProperty(property);
-        Unit saved = unitRepository.saveAndFlush(unit);
+        Unit saved = unitRepository.save(unit);
         return responseMapper.apply(saved);
     }
 

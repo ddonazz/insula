@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class TenantAwareBaseEntity extends BaseEntity {
+public abstract class TenantAwareBaseEntity extends PublicBaseEntity {
 
     @TenantId
     @Column(name = "tenant_id", nullable = false, updatable = false)

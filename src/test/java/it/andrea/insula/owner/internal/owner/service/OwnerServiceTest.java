@@ -35,17 +35,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OwnerServiceTest {
 
-    @Mock private OwnerRepository repository;
-    @Mock private OwnerValidator validator;
-    @Mock private OwnerCreateMapper createMapper;
-    @Mock private OwnerUpdateMapper updateMapper;
-    @Mock private OwnerPatchMapper patchMapper;
-    @Mock private OwnerResponseMapper responseMapper;
+    @Mock
+    private OwnerRepository repository;
+    @Mock
+    private OwnerValidator validator;
+    @Mock
+    private OwnerCreateMapper createMapper;
+    @Mock
+    private OwnerUpdateMapper updateMapper;
+    @Mock
+    private OwnerPatchMapper patchMapper;
+    @Mock
+    private OwnerResponseMapper responseMapper;
 
     @InjectMocks
     private OwnerService service;

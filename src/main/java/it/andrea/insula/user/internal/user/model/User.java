@@ -6,12 +6,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -25,9 +22,6 @@ public class User extends TenantAwareBaseEntity {
     @SequenceGenerator(name = "user_sequence", sequenceName = "USER_SEQUENCE", allocationSize = 1)
     private Long id;
 
-    @UuidGenerator
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @Column(unique = true, nullable = false)
     private String username;
@@ -79,17 +73,5 @@ public class User extends TenantAwareBaseEntity {
     @Transient
     public boolean isCredentialsNonExpired() {
         return status != UserStatus.DELETED;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User user)) return false;
-        return Objects.equals(publicId, user.publicId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(publicId);
     }
 }

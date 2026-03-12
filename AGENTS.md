@@ -63,12 +63,16 @@ Ogni Controller deve essere annotato con:
 ## 5. Standard Database e JPA
 - **Gerarchia BaseEntity:** Le entità devono estendere le classi base appropriate per ereditare l'auditing e l'identificazione (es. `BaseEntity`, `TenantAwareBaseEntity`). Per facilitare i controlli di sicurezza, propaga coerentemente l'estensione di `TenantAwareBaseEntity` anche alle entità figlie strette (es. `CustomerAddress` appartenente a un `BusinessCustomer`).
 - **Doppia Chiave e publicId:** - `Long id` (@Id) è usato internamente per le relazioni a DB e per le performance.
-  - `UUID publicId` (@UuidGenerator) funge da identificatore opaco ed è l'unico da esporre nei DTO e nelle API REST (es. `/api/resource/{publicId}`).
-  - **Consistenza e DRY:** Centralizza la definizione del `publicId` nelle classi base (es. creando una `PublicBaseEntity` o aggiungendolo in `BaseEntity`) per evitare duplicazioni. Usa sempre la sintassi coerente: `@Column(name = "public_id", nullable = false, unique = true, updatable = false)`.
+  - `UUID publicId` funge da identificatore opaco ed è l'unico da esporre nei DTO e nelle API REST (es. `/api/resource/{publicId}`).
+  - **Inizializzazione Java (Mandatoria):** L'UUID deve essere **sempre inizializzato direttamente in Java** al momento dell'istanziazione dell'oggetto (es. `private UUID publicId = UUID.randomUUID();`). **Vietato l'uso di `@UuidGenerator`** o la delega della generazione a Hibernate/Database. Questo garantisce un identificatore di business forte e immutabile fin dal primo istante, evitando bug sulle Hash Collections prima del salvataggio.
+  - **Consistenza e DRY:** Centralizza la definizione e l'inizializzazione del `publicId` nelle classi base (es. creando una `PublicBaseEntity` o aggiungendolo in `BaseEntity`) per evitare duplicazioni. Usa sempre la sintassi coerente: `@Column(name = "public_id", nullable = false, unique = true, updatable = false)`.
   - **Eccezioni al publicId:** Le entità che possiedono già una chiave pubblica di business naturale (es. `Permission` con `authority`, o tabelle di dizionario/ruoli statici) possono omettere l'uso del `publicId` e utilizzare direttamente la chiave naturale.
 - **equals() e hashCode() (Fondamentale):**
   - **MAI** basare `equals()` e `hashCode()` sull'`id` del database (`Long id`). Poiché l'ID primario viene generato solo dopo l'inserimento sul DB, il suo hash cambierebbe dopo la persistenza, causando bug critici e perdite di dati all'interno delle Collection (es. `HashSet`) di Hibernate.
-  - Utilizza **sempre e solo** il `publicId` (che viene istanziato in memoria da `@UuidGenerator` prima del salvataggio) oppure campi univoci di business (es. `email`, `username`, `authority`, `name`) per l'implementazione di `equals()` e `hashCode()`.
+  - Utilizza **sempre e solo** il `publicId` (che, essendo inizializzato in Java alla creazione, non è mai `null`) oppure campi univoci di business (es. `email`, `username`, `authority`, `name`) per l'implementazione di `equals()` e `hashCode()`.
+- **Prevenzione rigorosa del Problema N+1 (ATTENZIONE COSTANTE):**
+  - Presta sempre la massima attenzione alle query N+1, specialmente durante la fase di mapping. **È severamente vietato** chiamare metodi su collezioni Lazy (come `.size()`, es. `property.getUnits().size()`) o iterare su collezioni non inizializzate all'interno dei Mapper. Questo nasconde insidie prestazionali gravi (es. 1 query principale + N query aggiuntive in un ciclo `findAll`).
+  - **Soluzioni imposte:** Usa query JPQL mirate con `JOIN FETCH`, annotazioni `@EntityGraph` nei Repository, subquery native, colonne calcolate con `@Formula`, oppure esegui query di `COUNT` dedicate *prima* del mapping e passale al mapper.
 - **Soft Delete:** Le entità con ciclo di vita (es. `User`, `Agency`) usano un enum `[Domain]Status` (che include `DELETED`) + un campo `Instant deletedAt` + un metodo `delete()` che imposta entrambi. Non cancellare mai fisicamente questi record. Nelle `Specification`, escludi di default i `DELETED`.
 - **JPA Inheritance:** Per entità con sottotipi (es. `Customer`), usa `@Inheritance(strategy = InheritanceType.JOINED)` con `@DiscriminatorColumn` sulla superclasse e `@DiscriminatorValue` sulle sottoclassi.
 - **Custom Converters:** Per tipi non supportati nativamente da JPA (es. `ZoneId`), crea un `@Converter` che implementa `AttributeConverter<JavaType, String>`, posizionato nel package `model` del dominio (es. `ZoneIdAttributeConverter`).
@@ -94,7 +98,7 @@ Ogni Controller deve essere annotato con:
 - **Enum i18n (`EnumTranslator`):** Quando un enum viene esposto in un DTO di risposta, traducilo tramite `EnumTranslator` (iniettabile, `it.andrea.insula.core.dto.EnumTranslator`) che restituisce un `TranslatedEnum(code, label)`. La chiave di traduzione segue la convenzione `enum.<lowercaseclassname>.<VALUE>` in `messages.properties` (es. `enum.agencystatus.ACTIVE`).
 
 ## 7. Workflow Operativo (Mandatorio)
-1. **Analisi:** Verifica la necessità di `@TenantId` e definisci i vincoli di validazione.
+1. **Analisi:** Verifica la necessità di `@TenantId`, definisci i vincoli di validazione e **valuta in anticipo il rischio di query N+1** nelle relazioni dell'entità.
 2. **Pianificazione:** Elenca i file: Entity, `[Domain]ErrorCodes`, Validator, Mappers, Service, Controller. Aggiungi `[Domain]Specification` e `[Domain]SearchCriteria` se serve filtro/paginazione.
 3. **Implementazione:**
    - Applica `@Validated` nel Controller (non `@Valid`).
@@ -131,4 +135,3 @@ it.andrea.insula.modulo.internal.subdomain
  │    └── SubdomainValidator.java (controlli business/DB)
  └── web
       └── SubdomainController.java (@Tag, @Operation, @Validated, @ParameterObject)
-```

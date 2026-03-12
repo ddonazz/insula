@@ -1,12 +1,7 @@
 package it.andrea.insula.owner.internal.agreement.mapper;
 
 import it.andrea.insula.owner.internal.agreement.dto.request.AgreementPatchDto;
-import it.andrea.insula.owner.internal.agreement.model.AgreementState;
-import it.andrea.insula.owner.internal.agreement.model.FinancialModel;
-import it.andrea.insula.owner.internal.agreement.model.FinancialTerms;
-import it.andrea.insula.owner.internal.agreement.model.ManagementAgreement;
-import it.andrea.insula.owner.internal.agreement.model.OperationalTerms;
-import it.andrea.insula.owner.internal.agreement.model.PaymentFrequency;
+import it.andrea.insula.owner.internal.agreement.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

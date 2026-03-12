@@ -34,17 +34,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PriceListServiceTest {
 
-    @Mock private PriceListRepository repository;
-    @Mock private PriceListValidator validator;
-    @Mock private PriceListCreateMapper createMapper;
-    @Mock private PriceListUpdateMapper updateMapper;
-    @Mock private PriceListPatchMapper patchMapper;
-    @Mock private PriceListResponseMapper responseMapper;
+    @Mock
+    private PriceListRepository repository;
+    @Mock
+    private PriceListValidator validator;
+    @Mock
+    private PriceListCreateMapper createMapper;
+    @Mock
+    private PriceListUpdateMapper updateMapper;
+    @Mock
+    private PriceListPatchMapper patchMapper;
+    @Mock
+    private PriceListResponseMapper responseMapper;
 
     @InjectMocks
     private PriceListService service;

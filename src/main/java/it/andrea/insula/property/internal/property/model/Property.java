@@ -7,12 +7,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.Formula;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "properties")
@@ -25,10 +23,6 @@ public class Property extends TenantAwareBaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "property_sequence")
     @SequenceGenerator(name = "property_sequence", sequenceName = "PROPERTY_SEQUENCE", allocationSize = 1)
     private Long id;
-
-    @UuidGenerator
-    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
-    private UUID publicId;
 
     @Column(nullable = false)
     private String name;
@@ -52,15 +46,6 @@ public class Property extends TenantAwareBaseEntity {
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Unit> units = new HashSet<>();
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Property property)) return false;
-        return Objects.equals(publicId, property.publicId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(publicId);
-    }
+    @Formula("(SELECT COUNT(*) FROM units u WHERE u.property_id = id AND u.tenant_id = tenant_id)")
+    private int unitCount;
 }

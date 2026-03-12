@@ -25,7 +25,7 @@ public class PropertyResponseMapper implements Function<Property, PropertyRespon
                 .address(addressResponseMapper.apply(property.getAddress()))
                 .constructionYear(property.getConstructionYear())
                 .amenities(enumTranslator.translateAll(property.getAmenities()))
-                .unitCount(property.getUnits() != null ? property.getUnits().size() : 0)
+                .unitCount(property.getUnitCount())
                 .build();
     }
 }
