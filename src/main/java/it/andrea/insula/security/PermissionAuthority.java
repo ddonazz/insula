@@ -47,6 +47,16 @@ public enum PermissionAuthority {
     AGREEMENT_UPDATE(Constants.AGREEMENT_UPDATE, "Update agreement", Domains.AGREEMENT),
     AGREEMENT_DELETE(Constants.AGREEMENT_DELETE, "Delete agreement", Domains.AGREEMENT),
 
+    PRICELIST_READ(Constants.PRICELIST_READ, "Read price list", Domains.PRICELIST),
+    PRICELIST_CREATE(Constants.PRICELIST_CREATE, "Create price list", Domains.PRICELIST),
+    PRICELIST_UPDATE(Constants.PRICELIST_UPDATE, "Update price list", Domains.PRICELIST),
+    PRICELIST_DELETE(Constants.PRICELIST_DELETE, "Delete price list", Domains.PRICELIST),
+
+    RATE_READ(Constants.RATE_READ, "Read rate", Domains.RATE),
+    RATE_CREATE(Constants.RATE_CREATE, "Create rate", Domains.RATE),
+    RATE_UPDATE(Constants.RATE_UPDATE, "Update rate", Domains.RATE),
+    RATE_DELETE(Constants.RATE_DELETE, "Delete rate", Domains.RATE),
+
     ADMIN_ACCESS(Constants.ADMIN_ACCESS, "Admin access", Domains.ADMIN);
 
     private final String authority;
@@ -107,6 +117,16 @@ public enum PermissionAuthority {
         public static final String AGREEMENT_UPDATE = "agreement:update";
         public static final String AGREEMENT_DELETE = "agreement:delete";
 
+        public static final String PRICELIST_READ = "pricelist:read";
+        public static final String PRICELIST_CREATE = "pricelist:create";
+        public static final String PRICELIST_UPDATE = "pricelist:update";
+        public static final String PRICELIST_DELETE = "pricelist:delete";
+
+        public static final String RATE_READ = "rate:read";
+        public static final String RATE_CREATE = "rate:create";
+        public static final String RATE_UPDATE = "rate:update";
+        public static final String RATE_DELETE = "rate:delete";
+
         public static final String ADMIN_ACCESS = "admin:access";
     }
 
@@ -120,6 +140,8 @@ public enum PermissionAuthority {
         public static final String UNIT = "UNIT";
         public static final String OWNER = "OWNER";
         public static final String AGREEMENT = "AGREEMENT";
+        public static final String PRICELIST = "PRICELIST";
+        public static final String RATE = "RATE";
         public static final String ADMIN = "ADMIN";
     }
 }
