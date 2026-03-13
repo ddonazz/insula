@@ -1,7 +1,7 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
 import it.andrea.insula.customer.internal.address.mapper.CustomerAddressPatchMapper;
-import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerPatchDto;
+import it.andrea.insula.customer.internal.customer.dto.request.BusinessCustomerPatchDto;
 import it.andrea.insula.customer.internal.customer.model.BusinessCustomer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -46,4 +46,3 @@ public class BusinessCustomerPatchMapper implements BiFunction<BusinessCustomerP
         return customer;
     }
 }
-

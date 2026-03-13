@@ -10,20 +10,21 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "owners")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "owner_type")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Owner extends TenantAwareBaseEntity {
+public abstract class Owner extends TenantAwareBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "owner_sequence")
     @SequenceGenerator(name = "owner_sequence", sequenceName = "OWNER_SEQUENCE", allocationSize = 1)
     private Long id;
 
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OwnerType type;
+    @Column(name = "owner_type", insertable = false, updatable = false)
+    private OwnerType ownerType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -34,20 +35,8 @@ public class Owner extends TenantAwareBaseEntity {
 
     private String phoneNumber;
 
-    private String firstName;
-    private String lastName;
-
-    private String companyName;
-
     @Column(nullable = false, unique = true)
     private String fiscalCode;
-
-    private String vatNumber;
-
-    @Column(length = 7)
-    private String sdiCode;
-
-    private String pecEmail;
 
     @Embedded
     private OwnerAddress address;
@@ -63,3 +52,4 @@ public class Owner extends TenantAwareBaseEntity {
         this.deletedAt = Instant.now();
     }
 }
+

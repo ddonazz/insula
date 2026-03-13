@@ -1,6 +1,6 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
-import it.andrea.insula.customer.internal.customer.dto.request.business.CustomerContactCreateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.CustomerContactCreateDto;
 import it.andrea.insula.customer.internal.customer.model.CustomerContact;
 import org.springframework.stereotype.Component;
 

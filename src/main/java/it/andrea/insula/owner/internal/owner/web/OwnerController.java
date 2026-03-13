@@ -27,7 +27,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/owners")
 @RequiredArgsConstructor
-@Tag(name = "Owner Management", description = "APIs for managing property owners")
+@Tag(name = "Owner Management", description = "Unified APIs for managing property owners (individual and business)")
 public class OwnerController {
 
     private final OwnerService service;
@@ -44,7 +44,7 @@ public class OwnerController {
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.OWNER_READ + "')")
     public ResponseEntity<PageResponse<OwnerResponseDto>> getAll(
             @ParameterObject OwnerSearchCriteria criteria,
-            @ParameterObject @PageableDefault(size = 20, sort = "lastName") Pageable pageable
+            @ParameterObject @PageableDefault(size = 20, sort = "email") Pageable pageable
     ) {
         return ResponseEntity.ok(service.getAll(criteria, pageable));
     }
@@ -56,7 +56,7 @@ public class OwnerController {
         return ResponseEntity.ok(service.findAll(criteria));
     }
 
-    @Operation(summary = "Create a new owner")
+    @Operation(summary = "Create a new owner (individual or business)")
     @PostMapping
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.OWNER_CREATE + "')")
     public ResponseEntity<OwnerResponseDto> create(@Validated @RequestBody OwnerCreateDto dto) {
@@ -68,17 +68,23 @@ public class OwnerController {
         return ResponseEntity.created(location).body(created);
     }
 
-    @Operation(summary = "Update an existing owner")
+    @Operation(summary = "Full update an existing owner")
     @PutMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.OWNER_UPDATE + "')")
-    public ResponseEntity<OwnerResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody OwnerUpdateDto dto) {
+    public ResponseEntity<OwnerResponseDto> update(
+            @PathVariable UUID publicId,
+            @Validated @RequestBody OwnerUpdateDto dto
+    ) {
         return ResponseEntity.ok(service.update(publicId, dto));
     }
 
-    @Operation(summary = "Patch an existing owner")
+    @Operation(summary = "Partial update an existing owner")
     @PatchMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.OWNER_UPDATE + "')")
-    public ResponseEntity<OwnerResponseDto> patch(@PathVariable UUID publicId, @Validated @RequestBody OwnerPatchDto dto) {
+    public ResponseEntity<OwnerResponseDto> patch(
+            @PathVariable UUID publicId,
+            @Validated @RequestBody OwnerPatchDto dto
+    ) {
         return ResponseEntity.ok(service.patch(publicId, dto));
     }
 

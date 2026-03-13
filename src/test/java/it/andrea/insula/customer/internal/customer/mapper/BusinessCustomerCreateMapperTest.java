@@ -2,7 +2,7 @@ package it.andrea.insula.customer.internal.customer.mapper;
 
 import it.andrea.insula.customer.internal.address.dto.request.CustomerAddressCreateDto;
 import it.andrea.insula.customer.internal.address.mapper.CustomerAddressCreateMapper;
-import it.andrea.insula.customer.internal.customer.dto.request.business.BusinessCustomerCreateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.BusinessCustomerCreateDto;
 import it.andrea.insula.customer.internal.customer.model.BusinessCustomer;
 import org.junit.jupiter.api.Test;
 

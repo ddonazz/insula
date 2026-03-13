@@ -1,7 +1,7 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
 import it.andrea.insula.customer.internal.address.mapper.CustomerAddressUpdateMapper;
-import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerUpdateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.IndividualCustomerUpdateDto;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,4 +29,3 @@ public class IndividualCustomerUpdateMapper implements BiFunction<IndividualCust
         return customer;
     }
 }
-

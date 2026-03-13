@@ -1,9 +1,6 @@
 package it.andrea.insula.owner;
 
-import it.andrea.insula.owner.internal.owner.model.Owner;
-import it.andrea.insula.owner.internal.owner.model.OwnerRepository;
-import it.andrea.insula.owner.internal.owner.model.OwnerStatus;
-import it.andrea.insula.owner.internal.owner.model.OwnerType;
+import it.andrea.insula.owner.internal.owner.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,13 +40,15 @@ public class OwnerQueryService {
     }
 
     private OwnerSummary toSummary(Owner owner) {
-        String displayName = owner.getType() == OwnerType.COMPANY
-                ? owner.getCompanyName()
-                : (owner.getFirstName() + " " + owner.getLastName()).trim();
+        String displayName = switch (owner) {
+            case BusinessOwner bo -> bo.getCompanyName();
+            case IndividualOwner io -> (io.getFirstName() + " " + io.getLastName()).trim();
+            default -> owner.getEmail();
+        };
 
         return OwnerSummary.builder()
                 .publicId(owner.getPublicId())
-                .type(owner.getType().name())
+                .type(owner.getOwnerType().name())
                 .displayName(displayName)
                 .email(owner.getEmail())
                 .fiscalCode(owner.getFiscalCode())

@@ -15,10 +15,10 @@ import it.andrea.insula.owner.internal.agreement.mapper.AgreementUpdateMapper;
 import it.andrea.insula.owner.internal.agreement.model.AgreementState;
 import it.andrea.insula.owner.internal.agreement.model.ManagementAgreement;
 import it.andrea.insula.owner.internal.agreement.model.ManagementAgreementRepository;
+import it.andrea.insula.owner.internal.owner.model.IndividualOwner;
 import it.andrea.insula.owner.internal.owner.model.Owner;
 import it.andrea.insula.owner.internal.owner.model.OwnerRepository;
 import it.andrea.insula.owner.internal.owner.model.OwnerStatus;
-import it.andrea.insula.owner.internal.owner.model.OwnerType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,12 +63,12 @@ class AgreementServiceTest {
     @InjectMocks
     private AgreementService service;
 
-    private Owner owner;
-    private ManagementAgreement agreement;
-    private AgreementResponseDto responseDto;
     private UUID ownerPublicId;
     private UUID agreementPublicId;
     private UUID unitPublicId;
+    private Owner owner;
+    private ManagementAgreement agreement;
+    private AgreementResponseDto responseDto;
 
     @BeforeEach
     void setUp() {
@@ -76,14 +76,14 @@ class AgreementServiceTest {
         agreementPublicId = UUID.randomUUID();
         unitPublicId = UUID.randomUUID();
 
-        owner = new Owner();
+        owner = new IndividualOwner();
         owner.setId(1L);
         owner.setPublicId(ownerPublicId);
-        owner.setType(OwnerType.INDIVIDUAL);
         owner.setStatus(OwnerStatus.ACTIVE);
-        owner.setEmail("mario@rossi.it");
+        owner.setEmail("owner@test.it");
 
         agreement = new ManagementAgreement();
+        agreement.setId(10L);
         agreement.setPublicId(agreementPublicId);
         agreement.setOwner(owner);
         agreement.setUnitPublicId(unitPublicId);
@@ -98,118 +98,157 @@ class AgreementServiceTest {
                 .build();
     }
 
-    private void mockActiveOwner() {
-        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
-    }
-
-    // ─── create ──────────────────────────────────────────────────────────
-
     @Test
-    void create_shouldCreateSuccessfully() {
-        AgreementCreateDto dto = new AgreementCreateDto(
-                unitPublicId, AgreementState.DRAFT,
-                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
-                null, null, null
-        );
-
-        mockActiveOwner();
+    void create_shouldPersistAgreement_whenOwnerIsActiveAndDtoValid() {
+        AgreementCreateDto dto = createDto(unitPublicId, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31));
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
         when(createMapper.apply(dto)).thenReturn(agreement);
         when(agreementRepository.save(agreement)).thenReturn(agreement);
         when(responseMapper.apply(agreement)).thenReturn(responseDto);
 
         AgreementResponseDto result = service.create(ownerPublicId, dto);
 
-        assertThat(result).isNotNull();
-        assertThat(result.unitPublicId()).isEqualTo(unitPublicId);
+        assertThat(result).isSameAs(responseDto);
+        assertThat(agreement.getOwner()).isSameAs(owner);
         verify(validator).validateUnitExists(unitPublicId);
-        verify(validator).validateDates(LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31));
+        verify(validator).validateDates(dto.startDate(), dto.endDate());
         verify(agreementRepository).save(agreement);
     }
 
     @Test
-    void create_shouldThrowWhenOwnerNotFound() {
-        AgreementCreateDto dto = new AgreementCreateDto(
-                unitPublicId, AgreementState.DRAFT,
-                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
-                null, null, null
-        );
+    void create_shouldThrowNotFound_whenOwnerMissing() {
         when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.create(ownerPublicId, dto))
+        assertThatThrownBy(() -> service.create(ownerPublicId, createDto(unitPublicId, LocalDate.now(), LocalDate.now().plusDays(1))))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void create_shouldThrowWhenOwnerIsDeleted() {
+    void create_shouldThrowNotFound_whenOwnerDeleted() {
         owner.setStatus(OwnerStatus.DELETED);
-        AgreementCreateDto dto = new AgreementCreateDto(
-                unitPublicId, AgreementState.DRAFT,
-                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
-                null, null, null
-        );
         when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
 
-        assertThatThrownBy(() -> service.create(ownerPublicId, dto))
+        assertThatThrownBy(() -> service.create(ownerPublicId, createDto(unitPublicId, LocalDate.now(), LocalDate.now().plusDays(1))))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void create_shouldThrowWhenUnitValidationFails() {
-        AgreementCreateDto dto = new AgreementCreateDto(
-                unitPublicId, AgreementState.DRAFT,
-                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
-                null, null, null
-        );
-        mockActiveOwner();
-        doThrow(new ResourceNotFoundException(
-                it.andrea.insula.owner.internal.agreement.exception.AgreementErrorCodes.AGREEMENT_UNIT_NOT_FOUND, unitPublicId))
-                .when(validator).validateUnitExists(unitPublicId);
+    void update_shouldApplyMapperAndSave_whenAgreementExists() {
+        AgreementUpdateDto dto = updateDto(unitPublicId, LocalDate.of(2025, 2, 1), LocalDate.of(2025, 11, 30));
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
+        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
+                .thenReturn(Optional.of(agreement));
+        when(agreementRepository.save(agreement)).thenReturn(agreement);
+        when(responseMapper.apply(agreement)).thenReturn(responseDto);
 
-        assertThatThrownBy(() -> service.create(ownerPublicId, dto))
+        AgreementResponseDto result = service.update(ownerPublicId, agreementPublicId, dto);
+
+        assertThat(result).isSameAs(responseDto);
+        verify(validator).validateUnitExists(dto.unitPublicId());
+        verify(validator).validateDates(dto.startDate(), dto.endDate());
+        verify(updateMapper).apply(dto, agreement);
+        verify(agreementRepository).save(agreement);
+    }
+
+    @Test
+    void update_shouldThrowNotFound_whenAgreementMissing() {
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
+        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.update(ownerPublicId, agreementPublicId,
+                updateDto(unitPublicId, LocalDate.now(), LocalDate.now().plusDays(1))))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void create_shouldThrowWhenDatesAreInvalid() {
-        AgreementCreateDto dto = new AgreementCreateDto(
-                unitPublicId, AgreementState.DRAFT,
-                LocalDate.of(2025, 12, 31), LocalDate.of(2025, 1, 1),
-                null, null, null
-        );
-        mockActiveOwner();
-        doThrow(new BusinessRuleException(
-                it.andrea.insula.owner.internal.agreement.exception.AgreementErrorCodes.AGREEMENT_DATES_INVALID))
-                .when(validator).validateDates(LocalDate.of(2025, 12, 31), LocalDate.of(2025, 1, 1));
+    void patch_shouldApplyPatchAndUseExistingDates_whenDatesNotProvided() {
+        AgreementPatchDto dto = new AgreementPatchDto(null, AgreementState.SUSPENDED, null, null, null, null, null);
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
+        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
+                .thenReturn(Optional.of(agreement));
+        when(agreementRepository.save(agreement)).thenReturn(agreement);
+        when(responseMapper.apply(agreement)).thenReturn(responseDto);
 
-        assertThatThrownBy(() -> service.create(ownerPublicId, dto))
+        AgreementResponseDto result = service.patch(ownerPublicId, agreementPublicId, dto);
+
+        assertThat(result).isSameAs(responseDto);
+        verify(validator, never()).validateUnitExists(any());
+        verify(validator).validateDates(agreement.getStartDate(), agreement.getEndDate());
+        verify(patchMapper).apply(dto, agreement);
+        verify(agreementRepository).save(agreement);
+    }
+
+    @Test
+    void patch_shouldValidateChangedUnitAndEffectiveDates_whenProvided() {
+        UUID newUnit = UUID.randomUUID();
+        LocalDate newStart = LocalDate.of(2025, 3, 1);
+        AgreementPatchDto dto = new AgreementPatchDto(newUnit, null, newStart, null, null, null, null);
+
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
+        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
+                .thenReturn(Optional.of(agreement));
+        when(agreementRepository.save(agreement)).thenReturn(agreement);
+        when(responseMapper.apply(agreement)).thenReturn(responseDto);
+
+        service.patch(ownerPublicId, agreementPublicId, dto);
+
+        verify(validator).validateUnitExists(newUnit);
+        verify(validator).validateDates(newStart, agreement.getEndDate());
+    }
+
+    @Test
+    void patch_shouldThrowNotFound_whenAgreementMissing() {
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
+        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.patch(ownerPublicId, agreementPublicId,
+                new AgreementPatchDto(null, null, null, null, null, null, null)))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patch_shouldPropagateBusinessRule_whenDateValidationFails() {
+        AgreementPatchDto dto = new AgreementPatchDto(
+                null,
+                null,
+                LocalDate.of(2025, 12, 31),
+                LocalDate.of(2025, 1, 1),
+                null,
+                null,
+                null
+        );
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
+        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
+                .thenReturn(Optional.of(agreement));
+        doThrow(BusinessRuleException.class).when(validator).validateDates(dto.startDate(), dto.endDate());
+
+        assertThatThrownBy(() -> service.patch(ownerPublicId, agreementPublicId, dto))
                 .isInstanceOf(BusinessRuleException.class);
     }
 
-    // ─── getByPublicId ────────────────────────────────────────────────────
-
     @Test
-    void getByPublicId_shouldReturnAgreement() {
-        mockActiveOwner();
+    void getByPublicId_shouldReturnMappedDto_whenAgreementExists() {
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
         when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
                 .thenReturn(Optional.of(agreement));
         when(responseMapper.apply(agreement)).thenReturn(responseDto);
 
         AgreementResponseDto result = service.getByPublicId(ownerPublicId, agreementPublicId);
 
-        assertThat(result.publicId()).isEqualTo(agreementPublicId);
+        assertThat(result).isSameAs(responseDto);
     }
 
     @Test
-    void getByPublicId_shouldThrowWhenAgreementNotFound() {
-        mockActiveOwner();
+    void getByPublicId_shouldThrowNotFound_whenAgreementMissing() {
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
         when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getByPublicId(ownerPublicId, agreementPublicId))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
-
-    // ─── getAll ───────────────────────────────────────────────────────────
 
     @Test
     @SuppressWarnings("unchecked")
@@ -218,134 +257,32 @@ class AgreementServiceTest {
         AgreementSearchCriteria criteria = new AgreementSearchCriteria(null, null, null, null);
         Page<ManagementAgreement> page = new PageImpl<>(List.of(agreement), pageable, 1);
 
-        mockActiveOwner();
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
         when(agreementRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
         when(responseMapper.apply(agreement)).thenReturn(responseDto);
 
         PageResponse<AgreementResponseDto> result = service.getAll(ownerPublicId, criteria, pageable);
 
-        assertThat(result.content()).hasSize(1);
+        assertThat(result.content()).containsExactly(responseDto);
     }
-
-    // ─── findAll ──────────────────────────────────────────────────────────
 
     @Test
     @SuppressWarnings("unchecked")
-    void findAll_shouldReturnList() {
+    void findAll_shouldReturnMappedList() {
         AgreementSearchCriteria criteria = new AgreementSearchCriteria(null, null, null, null);
 
-        mockActiveOwner();
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
         when(agreementRepository.findAll(any(Specification.class))).thenReturn(List.of(agreement));
         when(responseMapper.apply(agreement)).thenReturn(responseDto);
 
         List<AgreementResponseDto> result = service.findAll(ownerPublicId, criteria);
 
-        assertThat(result).hasSize(1);
-    }
-
-    // ─── update ───────────────────────────────────────────────────────────
-
-    @Test
-    void update_shouldUpdateSuccessfully() {
-        AgreementUpdateDto dto = new AgreementUpdateDto(
-                unitPublicId, AgreementState.ACTIVE,
-                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
-                null, null, null
-        );
-
-        mockActiveOwner();
-        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
-                .thenReturn(Optional.of(agreement));
-        when(updateMapper.apply(dto, agreement)).thenReturn(agreement);
-        when(agreementRepository.save(agreement)).thenReturn(agreement);
-        when(responseMapper.apply(agreement)).thenReturn(responseDto);
-
-        AgreementResponseDto result = service.update(ownerPublicId, agreementPublicId, dto);
-
-        assertThat(result).isNotNull();
-        verify(validator).validateUnitExists(unitPublicId);
-        verify(updateMapper).apply(dto, agreement);
-        verify(agreementRepository).save(agreement);
+        assertThat(result).containsExactly(responseDto);
     }
 
     @Test
-    void update_shouldThrowWhenAgreementNotFound() {
-        AgreementUpdateDto dto = new AgreementUpdateDto(
-                unitPublicId, AgreementState.ACTIVE,
-                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
-                null, null, null
-        );
-
-        mockActiveOwner();
-        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.update(ownerPublicId, agreementPublicId, dto))
-                .isInstanceOf(ResourceNotFoundException.class);
-    }
-
-    // ─── patch ────────────────────────────────────────────────────────────
-
-    @Test
-    void patch_shouldPatchSuccessfully() {
-        AgreementPatchDto dto = new AgreementPatchDto(
-                null, AgreementState.SUSPENDED, null, null, null, null, null
-        );
-
-        mockActiveOwner();
-        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
-                .thenReturn(Optional.of(agreement));
-        when(patchMapper.apply(dto, agreement)).thenReturn(agreement);
-        when(agreementRepository.save(agreement)).thenReturn(agreement);
-        when(responseMapper.apply(agreement)).thenReturn(responseDto);
-
-        AgreementResponseDto result = service.patch(ownerPublicId, agreementPublicId, dto);
-
-        assertThat(result).isNotNull();
-        verify(patchMapper).apply(dto, agreement);
-        verify(agreementRepository).save(agreement);
-        // unitPublicId is null in dto, so validateUnitExists should NOT be called
-        verify(validator, never()).validateUnitExists(any());
-    }
-
-    @Test
-    void patch_shouldValidateUnitWhenUnitPublicIdChanged() {
-        UUID newUnit = UUID.randomUUID();
-        AgreementPatchDto dto = new AgreementPatchDto(
-                newUnit, null, null, null, null, null, null
-        );
-
-        mockActiveOwner();
-        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
-                .thenReturn(Optional.of(agreement));
-        when(patchMapper.apply(dto, agreement)).thenReturn(agreement);
-        when(agreementRepository.save(agreement)).thenReturn(agreement);
-        when(responseMapper.apply(agreement)).thenReturn(responseDto);
-
-        service.patch(ownerPublicId, agreementPublicId, dto);
-
-        verify(validator).validateUnitExists(newUnit);
-    }
-
-    @Test
-    void patch_shouldThrowWhenAgreementNotFound() {
-        AgreementPatchDto dto = new AgreementPatchDto(
-                null, AgreementState.SUSPENDED, null, null, null, null, null
-        );
-
-        mockActiveOwner();
-        when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.patch(ownerPublicId, agreementPublicId, dto))
-                .isInstanceOf(ResourceNotFoundException.class);
-    }
-
-    // ─── delete ───────────────────────────────────────────────────────────
-
-    @Test
-    void delete_shouldDeleteSuccessfully() {
-        mockActiveOwner();
+    void delete_shouldDeleteAgreement_whenAgreementExists() {
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
         when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
                 .thenReturn(Optional.of(agreement));
 
@@ -355,8 +292,16 @@ class AgreementServiceTest {
     }
 
     @Test
-    void delete_shouldThrowWhenAgreementNotFound() {
-        mockActiveOwner();
+    void delete_shouldThrowNotFound_whenOwnerMissing() {
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.delete(ownerPublicId, agreementPublicId))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void delete_shouldThrowNotFound_whenAgreementMissing() {
+        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.of(owner));
         when(agreementRepository.findByPublicIdAndOwnerPublicId(agreementPublicId, ownerPublicId))
                 .thenReturn(Optional.empty());
 
@@ -364,12 +309,11 @@ class AgreementServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
-    @Test
-    void delete_shouldThrowWhenOwnerNotFound() {
-        when(ownerRepository.findByPublicId(ownerPublicId)).thenReturn(Optional.empty());
+    private AgreementCreateDto createDto(UUID unitId, LocalDate start, LocalDate end) {
+        return new AgreementCreateDto(unitId, AgreementState.DRAFT, start, end, null, null, null);
+    }
 
-        assertThatThrownBy(() -> service.delete(ownerPublicId, agreementPublicId))
-                .isInstanceOf(ResourceNotFoundException.class);
+    private AgreementUpdateDto updateDto(UUID unitId, LocalDate start, LocalDate end) {
+        return new AgreementUpdateDto(unitId, AgreementState.ACTIVE, start, end, null, null, null);
     }
 }
-

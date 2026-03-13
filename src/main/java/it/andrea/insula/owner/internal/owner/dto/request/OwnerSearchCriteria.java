@@ -6,7 +6,7 @@ public record OwnerSearchCriteria(
         String name,
         String email,
         String fiscalCode,
-        OwnerType type
+        OwnerType ownerType
 ) {
 }
 

@@ -1,8 +1,8 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
 import it.andrea.insula.customer.internal.address.mapper.CustomerAddressResponseMapper;
-import it.andrea.insula.customer.internal.customer.dto.response.business.BusinessCustomerResponseDto;
-import it.andrea.insula.customer.internal.customer.dto.response.business.CustomerContactResponseDto;
+import it.andrea.insula.customer.internal.customer.dto.response.BusinessCustomerResponseDto;
+import it.andrea.insula.customer.internal.customer.dto.response.CustomerContactResponseDto;
 import it.andrea.insula.customer.internal.customer.model.BusinessCustomer;
 import it.andrea.insula.customer.internal.customer.model.CustomerContact;
 import lombok.RequiredArgsConstructor;
@@ -56,4 +56,3 @@ public class BusinessCustomerResponseMapper implements Function<BusinessCustomer
                 .collect(Collectors.toSet());
     }
 }
-

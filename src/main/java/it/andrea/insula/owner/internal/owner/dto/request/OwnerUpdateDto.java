@@ -1,40 +1,27 @@
 package it.andrea.insula.owner.internal.owner.dto.request;
 
-import it.andrea.insula.owner.internal.owner.model.OwnerType;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public record OwnerUpdateDto(
-        @NotNull
-        OwnerType type,
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "ownerType"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = IndividualOwnerUpdateDto.class, name = "INDIVIDUAL"),
+        @JsonSubTypes.Type(value = BusinessOwnerUpdateDto.class, name = "BUSINESS")
+})
+public sealed interface OwnerUpdateDto permits IndividualOwnerUpdateDto, BusinessOwnerUpdateDto {
 
-        @NotBlank
-        @Email
-        String email,
+    String email();
 
-        String phoneNumber,
+    String phoneNumber();
 
-        String firstName,
-        String lastName,
+    String fiscalCode();
 
-        String companyName,
+    OwnerAddressDto address();
 
-        @NotBlank
-        String fiscalCode,
-
-        String vatNumber,
-
-        @Size(max = 7)
-        String sdiCode,
-
-        @Email
-        String pecEmail,
-
-        OwnerAddressDto address,
-
-        BankAccountDto bankAccount
-) {
+    BankAccountDto bankAccount();
 }
 

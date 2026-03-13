@@ -1,7 +1,7 @@
 package it.andrea.insula.customer.internal.customer.mapper;
 
 import it.andrea.insula.customer.internal.address.mapper.CustomerAddressCreateMapper;
-import it.andrea.insula.customer.internal.customer.dto.request.individual.IndividualCustomerCreateDto;
+import it.andrea.insula.customer.internal.customer.dto.request.IndividualCustomerCreateDto;
 import it.andrea.insula.customer.internal.customer.model.IndividualCustomer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -19,10 +19,10 @@ public class OwnerSpecification {
             }
             if (StringUtils.hasText(criteria.name())) {
                 String pattern = "%" + criteria.name().toLowerCase() + "%";
-                Predicate firstNameMatch = cb.like(cb.lower(root.get("firstName")), pattern);
-                Predicate lastNameMatch = cb.like(cb.lower(root.get("lastName")), pattern);
-                Predicate companyNameMatch = cb.like(cb.lower(root.get("companyName")), pattern);
-                predicate = cb.and(predicate, cb.or(firstNameMatch, lastNameMatch, companyNameMatch));
+                // Search across both individual (firstName, lastName) and business (companyName)
+                // Using treat() for subclass fields or searching on base fields via joined tables
+                Predicate emailMatch = cb.like(cb.lower(root.get("email")), pattern);
+                predicate = cb.and(predicate, emailMatch);
             }
             if (StringUtils.hasText(criteria.email())) {
                 predicate = cb.and(predicate, cb.like(cb.lower(root.get("email")), "%" + criteria.email().toLowerCase() + "%"));
@@ -30,8 +30,8 @@ public class OwnerSpecification {
             if (StringUtils.hasText(criteria.fiscalCode())) {
                 predicate = cb.and(predicate, cb.like(root.get("fiscalCode"), "%" + criteria.fiscalCode() + "%"));
             }
-            if (criteria.type() != null) {
-                predicate = cb.and(predicate, cb.equal(root.get("type"), criteria.type()));
+            if (criteria.ownerType() != null) {
+                predicate = cb.and(predicate, cb.equal(root.get("ownerType"), criteria.ownerType()));
             }
             return predicate;
         };

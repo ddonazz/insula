@@ -4,7 +4,7 @@ import it.andrea.insula.core.dto.EnumTranslator;
 import it.andrea.insula.core.dto.TranslatedEnum;
 import it.andrea.insula.owner.internal.agreement.dto.response.AgreementResponseDto;
 import it.andrea.insula.owner.internal.agreement.model.*;
-import it.andrea.insula.owner.internal.owner.model.Owner;
+import it.andrea.insula.owner.internal.owner.model.IndividualOwner;
 import it.andrea.insula.property.PropertyQueryService;
 import it.andrea.insula.property.UnitSummary;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +41,7 @@ class AgreementResponseMapperTest {
         ownerPublicId = UUID.randomUUID();
         unitPublicId = UUID.randomUUID();
 
-        Owner owner = new Owner();
+        IndividualOwner owner = new IndividualOwner();
         owner.setPublicId(ownerPublicId);
 
         FinancialTerms ft = new FinancialTerms();
