@@ -25,6 +25,7 @@ public class BusinessCustomerResponseMapper implements Function<BusinessCustomer
                 .publicId(customer.getPublicId())
                 .email(customer.getEmail())
                 .phoneNumber(customer.getPhoneNumber())
+                .displayName(customer.getDisplayName())
                 .customerType(customer.getCustomerType())
                 .companyName(customer.getCompanyName())
                 .vatNumber(customer.getVatNumber())

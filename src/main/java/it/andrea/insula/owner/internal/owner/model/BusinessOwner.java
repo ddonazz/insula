@@ -1,6 +1,9 @@
 package it.andrea.insula.owner.internal.owner.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,5 +26,11 @@ public class BusinessOwner extends Owner {
     private String sdiCode;
 
     private String pecEmail;
+
+    @Override
+    protected String generateDisplayName() {
+        return this.companyName;
+    }
+
 }
 

@@ -22,6 +22,9 @@ public abstract class Owner extends TenantAwareBaseEntity {
     @SequenceGenerator(name = "owner_sequence", sequenceName = "OWNER_SEQUENCE", allocationSize = 1)
     private Long id;
 
+    @Column(name = "display_name", nullable = false)
+    private String displayName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "owner_type", insertable = false, updatable = false)
     private OwnerType ownerType;
@@ -46,6 +49,14 @@ public abstract class Owner extends TenantAwareBaseEntity {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    protected abstract String generateDisplayName();
+
+    @PrePersist
+    @PreUpdate
+    protected void updateDisplayName() {
+        this.displayName = generateDisplayName();
+    }
 
     public void delete() {
         this.status = OwnerStatus.DELETED;

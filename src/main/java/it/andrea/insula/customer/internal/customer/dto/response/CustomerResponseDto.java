@@ -24,5 +24,6 @@ public sealed interface CustomerResponseDto permits IndividualCustomerResponseDt
     String email();
 
     String phoneNumber();
-}
 
+    String displayName();
+}

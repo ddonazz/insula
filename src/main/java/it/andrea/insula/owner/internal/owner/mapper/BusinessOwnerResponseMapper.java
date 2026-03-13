@@ -25,6 +25,7 @@ public class BusinessOwnerResponseMapper implements Function<BusinessOwner, Busi
                 .status(enumTranslator.translate(owner.getStatus()))
                 .email(owner.getEmail())
                 .phoneNumber(owner.getPhoneNumber())
+                .displayName(owner.getDisplayName())
                 .companyName(owner.getCompanyName())
                 .fiscalCode(owner.getFiscalCode())
                 .vatNumber(owner.getVatNumber())
@@ -60,4 +61,3 @@ public class BusinessOwnerResponseMapper implements Function<BusinessOwner, Busi
                 .build();
     }
 }
-

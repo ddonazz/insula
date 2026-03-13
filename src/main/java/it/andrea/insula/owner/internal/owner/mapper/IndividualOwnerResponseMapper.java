@@ -25,6 +25,7 @@ public class IndividualOwnerResponseMapper implements Function<IndividualOwner, 
                 .status(enumTranslator.translate(owner.getStatus()))
                 .email(owner.getEmail())
                 .phoneNumber(owner.getPhoneNumber())
+                .displayName(owner.getDisplayName())
                 .firstName(owner.getFirstName())
                 .lastName(owner.getLastName())
                 .fiscalCode(owner.getFiscalCode())
@@ -58,4 +59,3 @@ public class IndividualOwnerResponseMapper implements Function<IndividualOwner, 
                 .build();
     }
 }
-

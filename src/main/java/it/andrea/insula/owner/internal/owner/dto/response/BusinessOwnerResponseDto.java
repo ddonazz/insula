@@ -12,6 +12,7 @@ public record BusinessOwnerResponseDto(
         TranslatedEnum status,
         String email,
         String phoneNumber,
+        String displayName,
         String companyName,
         String fiscalCode,
         String vatNumber,
@@ -21,4 +22,3 @@ public record BusinessOwnerResponseDto(
         OwnerResponseDto.BankAccountResponseDto bankAccount
 ) implements OwnerResponseDto {
 }
-

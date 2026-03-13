@@ -45,4 +45,8 @@ public class BusinessCustomer extends Customer {
     @OneToMany(mappedBy = "businessCustomer", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CustomerContact> contacts;
 
+    @Override
+    protected String generateDisplayName() {
+        return this.companyName;
+    }
 }

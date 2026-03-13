@@ -20,6 +20,7 @@ public class IndividualCustomerResponseMapper implements Function<IndividualCust
                 .publicId(customer.getPublicId())
                 .email(customer.getEmail())
                 .phoneNumber(customer.getPhoneNumber())
+                .displayName(customer.getDisplayName())
                 .userPublicId(customer.getUserPublicId())
                 .customerType(customer.getCustomerType())
                 .firstName(customer.getFirstName())

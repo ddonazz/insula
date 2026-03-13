@@ -22,6 +22,8 @@ public abstract class Customer extends TenantAwareBaseEntity {
     @SequenceGenerator(name = "customer_sequence", sequenceName = "CUSTOMER_SEQUENCE", allocationSize = 1)
     private Long id;
 
+    @Column(name = "display_name", nullable = false)
+    private String displayName;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -36,5 +38,11 @@ public abstract class Customer extends TenantAwareBaseEntity {
     @Column(name = "customer_type", insertable = false, updatable = false)
     private CustomerType customerType;
 
+    protected abstract String generateDisplayName();
 
+    @PrePersist
+    @PreUpdate
+    protected void updateDisplayName() {
+        this.displayName = generateDisplayName();
+    }
 }

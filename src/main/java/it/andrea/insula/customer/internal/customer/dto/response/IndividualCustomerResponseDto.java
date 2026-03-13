@@ -13,6 +13,7 @@ public record IndividualCustomerResponseDto(
         CustomerType customerType,
         String email,
         String phoneNumber,
+        String displayName,
         UUID userPublicId,
         String firstName,
         String lastName,
@@ -23,4 +24,3 @@ public record IndividualCustomerResponseDto(
         CustomerAddressResponseDto billingAddress
 ) implements CustomerResponseDto {
 }
-

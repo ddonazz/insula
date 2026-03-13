@@ -13,6 +13,7 @@ public record BusinessCustomerResponseDto(
         CustomerType customerType,
         String email,
         String phoneNumber,
+        String displayName,
         String companyName,
         String vatNumber,
         String fiscalCode,
@@ -24,4 +25,3 @@ public record BusinessCustomerResponseDto(
         Set<CustomerContactResponseDto> contacts
 ) implements CustomerResponseDto {
 }
-

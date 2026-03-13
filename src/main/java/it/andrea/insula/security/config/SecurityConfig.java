@@ -75,8 +75,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(List.of(
                 "Authorization",
                 "Content-Type",
-                "Accept-Language",
-                "ngrok-skip-browser-warning" // ngrok header
+                "Accept-Language"
         ));
         configuration.setAllowCredentials(true);
 

@@ -28,6 +28,8 @@ public sealed interface OwnerResponseDto permits IndividualOwnerResponseDto, Bus
 
     String phoneNumber();
 
+    String displayName();
+
     String fiscalCode();
 
     OwnerAddressResponseDto address();
@@ -57,4 +59,3 @@ public sealed interface OwnerResponseDto permits IndividualOwnerResponseDto, Bus
     ) {
     }
 }
-

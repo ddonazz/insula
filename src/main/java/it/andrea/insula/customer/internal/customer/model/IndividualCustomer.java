@@ -36,4 +36,8 @@ public class IndividualCustomer extends Customer {
     @JoinColumn(name = "billing_address_id")
     private CustomerAddress billingAddress;
 
+    @Override
+    protected String generateDisplayName() {
+        return this.firstName + " " + this.lastName;
+    }
 }
