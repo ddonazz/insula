@@ -1,9 +1,9 @@
 package it.andrea.insula.pricing.internal.rate.dto.response;
 
+import it.andrea.insula.core.dto.TranslatedEnum;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -24,8 +24,8 @@ public record RateResponseDto(
         boolean stopSell,
         boolean closedToArrival,
         boolean closedToDeparture,
-        Set<DayOfWeek> allowedCheckInDays,
-        Set<DayOfWeek> allowedCheckOutDays
+        Set<TranslatedEnum> allowedCheckInDays,
+        Set<TranslatedEnum> allowedCheckOutDays
 ) {
 
     @Builder

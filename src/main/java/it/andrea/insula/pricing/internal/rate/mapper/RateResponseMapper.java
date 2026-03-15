@@ -1,5 +1,6 @@
 package it.andrea.insula.pricing.internal.rate.mapper;
 
+import it.andrea.insula.core.dto.EnumTranslator;
 import it.andrea.insula.pricing.internal.rate.dto.response.RateResponseDto;
 import it.andrea.insula.pricing.internal.rate.model.UnitRatePeriod;
 import it.andrea.insula.property.PropertyQueryService;
@@ -13,6 +14,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class RateResponseMapper implements Function<UnitRatePeriod, RateResponseDto> {
 
+    private final EnumTranslator enumTranslator;
     private final PropertyQueryService propertyQueryService;
 
     @Override
@@ -32,8 +34,8 @@ public class RateResponseMapper implements Function<UnitRatePeriod, RateResponse
                 .stopSell(rate.isStopSell())
                 .closedToArrival(rate.isClosedToArrival())
                 .closedToDeparture(rate.isClosedToDeparture())
-                .allowedCheckInDays(rate.getAllowedCheckInDays())
-                .allowedCheckOutDays(rate.getAllowedCheckOutDays())
+                .allowedCheckInDays(enumTranslator.translateAll(rate.getAllowedCheckInDays()))
+                .allowedCheckOutDays(enumTranslator.translateAll(rate.getAllowedCheckOutDays()))
                 .build();
     }
 
