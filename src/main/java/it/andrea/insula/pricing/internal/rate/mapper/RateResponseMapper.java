@@ -2,7 +2,7 @@ package it.andrea.insula.pricing.internal.rate.mapper;
 
 import it.andrea.insula.core.dto.EnumTranslator;
 import it.andrea.insula.pricing.internal.rate.dto.response.RateResponseDto;
-import it.andrea.insula.pricing.internal.rate.model.UnitRatePeriod;
+import it.andrea.insula.pricing.internal.rate.model.UnitRateDay;
 import it.andrea.insula.property.PropertyQueryService;
 import it.andrea.insula.property.UnitSummary;
 import lombok.RequiredArgsConstructor;
@@ -12,21 +12,22 @@ import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
-public class RateResponseMapper implements Function<UnitRatePeriod, RateResponseDto> {
+public class RateResponseMapper implements Function<UnitRateDay, RateResponseDto> {
 
     private final EnumTranslator enumTranslator;
     private final PropertyQueryService propertyQueryService;
 
     @Override
-    public RateResponseDto apply(UnitRatePeriod rate) {
+    public RateResponseDto apply(UnitRateDay rate) {
         return RateResponseDto.builder()
                 .publicId(rate.getPublicId())
                 .priceListPublicId(rate.getPriceList() != null ? rate.getPriceList().getPublicId() : null)
                 .priceListName(rate.getPriceList() != null ? rate.getPriceList().getName() : null)
+                .sourceSeasonPublicId(rate.getSourceSeason() != null ? rate.getSourceSeason().getPublicId() : null)
+                .sourceSeasonName(rate.getSourceSeason() != null ? rate.getSourceSeason().getName() : null)
                 .unitPublicId(rate.getUnitPublicId())
                 .unit(resolveUnitSummary(rate.getUnitPublicId()))
-                .startDate(rate.getStartDate())
-                .endDate(rate.getEndDate())
+                .stayDate(rate.getStayDate())
                 .pricePerNight(rate.getPricePerNight())
                 .extraGuestPrice(rate.getExtraGuestPrice())
                 .minStay(rate.getMinStay())
@@ -34,8 +35,7 @@ public class RateResponseMapper implements Function<UnitRatePeriod, RateResponse
                 .stopSell(rate.isStopSell())
                 .closedToArrival(rate.isClosedToArrival())
                 .closedToDeparture(rate.isClosedToDeparture())
-                .allowedCheckInDays(enumTranslator.translateAll(rate.getAllowedCheckInDays()))
-                .allowedCheckOutDays(enumTranslator.translateAll(rate.getAllowedCheckOutDays()))
+                .sourceSeasonType(rate.getSourceSeason() != null ? enumTranslator.translate(rate.getSourceSeason().getSeasonType()) : null)
                 .build();
     }
 

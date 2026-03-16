@@ -1,25 +1,21 @@
 package it.andrea.insula.pricing.internal.rate.mapper;
 
 import it.andrea.insula.pricing.internal.rate.dto.request.RatePatchDto;
-import it.andrea.insula.pricing.internal.rate.model.UnitRatePeriod;
+import it.andrea.insula.pricing.internal.rate.model.UnitRateDay;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.function.BiFunction;
 
 @Component
-public class RatePatchMapper implements BiFunction<RatePatchDto, UnitRatePeriod, UnitRatePeriod> {
+public class RatePatchMapper implements BiFunction<RatePatchDto, UnitRateDay, UnitRateDay> {
 
     @Override
-    public UnitRatePeriod apply(RatePatchDto dto, UnitRatePeriod rate) {
+    public UnitRateDay apply(RatePatchDto dto, UnitRateDay rate) {
         if (dto.unitPublicId() != null) {
             rate.setUnitPublicId(dto.unitPublicId());
         }
-        if (dto.startDate() != null) {
-            rate.setStartDate(dto.startDate());
-        }
-        if (dto.endDate() != null) {
-            rate.setEndDate(dto.endDate());
+        if (dto.stayDate() != null) {
+            rate.setStayDate(dto.stayDate());
         }
         if (dto.pricePerNight() != null) {
             rate.setPricePerNight(dto.pricePerNight());
@@ -41,12 +37,6 @@ public class RatePatchMapper implements BiFunction<RatePatchDto, UnitRatePeriod,
         }
         if (dto.closedToDeparture() != null) {
             rate.setClosedToDeparture(dto.closedToDeparture());
-        }
-        if (dto.allowedCheckInDays() != null) {
-            rate.setAllowedCheckInDays(new HashSet<>(dto.allowedCheckInDays()));
-        }
-        if (dto.allowedCheckOutDays() != null) {
-            rate.setAllowedCheckOutDays(new HashSet<>(dto.allowedCheckOutDays()));
         }
         return rate;
     }

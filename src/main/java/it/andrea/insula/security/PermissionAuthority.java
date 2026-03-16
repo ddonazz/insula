@@ -57,6 +57,26 @@ public enum PermissionAuthority {
     RATE_UPDATE(Constants.RATE_UPDATE, "Update rate", Domains.RATE),
     RATE_DELETE(Constants.RATE_DELETE, "Delete rate", Domains.RATE),
 
+    RATEPLAN_READ(Constants.RATEPLAN_READ, "Read rate plan", Domains.RATEPLAN),
+    RATEPLAN_CREATE(Constants.RATEPLAN_CREATE, "Create rate plan", Domains.RATEPLAN),
+    RATEPLAN_UPDATE(Constants.RATEPLAN_UPDATE, "Update rate plan", Domains.RATEPLAN),
+    RATEPLAN_DELETE(Constants.RATEPLAN_DELETE, "Delete rate plan", Domains.RATEPLAN),
+
+    SEASON_READ(Constants.SEASON_READ, "Read season", Domains.SEASON),
+    SEASON_CREATE(Constants.SEASON_CREATE, "Create season", Domains.SEASON),
+    SEASON_UPDATE(Constants.SEASON_UPDATE, "Update season", Domains.SEASON),
+    SEASON_DELETE(Constants.SEASON_DELETE, "Delete season", Domains.SEASON),
+
+    PROMOTION_READ(Constants.PROMOTION_READ, "Read promotion", Domains.PROMOTION),
+    PROMOTION_CREATE(Constants.PROMOTION_CREATE, "Create promotion", Domains.PROMOTION),
+    PROMOTION_UPDATE(Constants.PROMOTION_UPDATE, "Update promotion", Domains.PROMOTION),
+    PROMOTION_DELETE(Constants.PROMOTION_DELETE, "Delete promotion", Domains.PROMOTION),
+
+    PRICING_RULE_READ(Constants.PRICING_RULE_READ, "Read pricing rule", Domains.PRICING_RULE),
+    PRICING_RULE_CREATE(Constants.PRICING_RULE_CREATE, "Create pricing rule", Domains.PRICING_RULE),
+    PRICING_RULE_UPDATE(Constants.PRICING_RULE_UPDATE, "Update pricing rule", Domains.PRICING_RULE),
+    PRICING_RULE_DELETE(Constants.PRICING_RULE_DELETE, "Delete pricing rule", Domains.PRICING_RULE),
+
     ADMIN_ACCESS(Constants.ADMIN_ACCESS, "Admin access", Domains.ADMIN);
 
     private final String authority;
@@ -127,6 +147,26 @@ public enum PermissionAuthority {
         public static final String RATE_UPDATE = "rate:update";
         public static final String RATE_DELETE = "rate:delete";
 
+        public static final String RATEPLAN_READ = "rateplan:read";
+        public static final String RATEPLAN_CREATE = "rateplan:create";
+        public static final String RATEPLAN_UPDATE = "rateplan:update";
+        public static final String RATEPLAN_DELETE = "rateplan:delete";
+
+        public static final String SEASON_READ = "season:read";
+        public static final String SEASON_CREATE = "season:create";
+        public static final String SEASON_UPDATE = "season:update";
+        public static final String SEASON_DELETE = "season:delete";
+
+        public static final String PROMOTION_READ = "promotion:read";
+        public static final String PROMOTION_CREATE = "promotion:create";
+        public static final String PROMOTION_UPDATE = "promotion:update";
+        public static final String PROMOTION_DELETE = "promotion:delete";
+
+        public static final String PRICING_RULE_READ = "pricing-rule:read";
+        public static final String PRICING_RULE_CREATE = "pricing-rule:create";
+        public static final String PRICING_RULE_UPDATE = "pricing-rule:update";
+        public static final String PRICING_RULE_DELETE = "pricing-rule:delete";
+
         public static final String ADMIN_ACCESS = "admin:access";
     }
 
@@ -142,6 +182,10 @@ public enum PermissionAuthority {
         public static final String AGREEMENT = "AGREEMENT";
         public static final String PRICELIST = "PRICELIST";
         public static final String RATE = "RATE";
+        public static final String RATEPLAN = "RATEPLAN";
+        public static final String SEASON = "SEASON";
+        public static final String PROMOTION = "PROMOTION";
+        public static final String PRICING_RULE = "PRICING_RULE";
         public static final String ADMIN = "ADMIN";
     }
 }

@@ -2,6 +2,10 @@ package it.andrea.insula.pricing.internal.rate.service;
 
 import it.andrea.insula.core.exception.BusinessRuleException;
 import it.andrea.insula.core.exception.ResourceNotFoundException;
+import it.andrea.insula.pricing.internal.rate.model.UnitRateDay;
+import it.andrea.insula.pricing.internal.rate.model.UnitRateDayRepository;
+import it.andrea.insula.pricing.internal.season.model.SeasonPeriod;
+import it.andrea.insula.pricing.internal.season.model.SeasonPeriodRepository;
 import it.andrea.insula.property.PropertyQueryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -22,40 +25,14 @@ class RateValidatorTest {
     @Mock
     private PropertyQueryService propertyQueryService;
 
+    @Mock
+    private SeasonPeriodRepository seasonRepository;
+
+    @Mock
+    private UnitRateDayRepository repository;
+
     @InjectMocks
     private RateValidator validator;
-
-    // ─── validateDates ───────────────────────────────────────────────────
-
-    @Test
-    void validateDates_shouldPassWhenStartBeforeEnd() {
-        assertThatCode(() -> validator.validateDates(
-                LocalDate.of(2025, 6, 1),
-                LocalDate.of(2025, 8, 31)
-        )).doesNotThrowAnyException();
-    }
-
-    @Test
-    void validateDates_shouldThrowWhenStartEqualsEnd() {
-        assertThatThrownBy(() -> validator.validateDates(
-                LocalDate.of(2025, 6, 1),
-                LocalDate.of(2025, 6, 1)
-        )).isInstanceOf(BusinessRuleException.class);
-    }
-
-    @Test
-    void validateDates_shouldThrowWhenStartAfterEnd() {
-        assertThatThrownBy(() -> validator.validateDates(
-                LocalDate.of(2025, 8, 31),
-                LocalDate.of(2025, 6, 1)
-        )).isInstanceOf(BusinessRuleException.class);
-    }
-
-    @Test
-    void validateDates_shouldPassWhenBothNull() {
-        assertThatCode(() -> validator.validateDates(null, null))
-                .doesNotThrowAnyException();
-    }
 
     // ─── validateUnitExists ──────────────────────────────────────────────
 
@@ -119,6 +96,39 @@ class RateValidatorTest {
     void validateStayConstraints_shouldPassWhenOnlyMaxProvided() {
         assertThatCode(() -> validator.validateStayConstraints(null, 14))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void validateSourceSeasonExists_shouldPassWhenFound() {
+        UUID seasonPublicId = UUID.randomUUID();
+        when(seasonRepository.findByPublicId(seasonPublicId)).thenReturn(java.util.Optional.of(new SeasonPeriod()));
+
+        assertThatCode(() -> validator.validateSourceSeasonExists(seasonPublicId))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void validateSourceSeasonExists_shouldThrowWhenMissing() {
+        UUID seasonPublicId = UUID.randomUUID();
+        when(seasonRepository.findByPublicId(seasonPublicId)).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> validator.validateSourceSeasonExists(seasonPublicId))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void validateNoDuplicate_shouldThrowWhenDuplicateFound() {
+        UUID priceListId = UUID.randomUUID();
+        UUID unitId = UUID.randomUUID();
+        java.time.LocalDate stayDate = java.time.LocalDate.of(2026, 1, 10);
+        UnitRateDay found = new UnitRateDay();
+        found.setId(10L);
+
+        when(repository.findByPriceListPublicIdAndUnitPublicIdAndStayDate(priceListId, unitId, stayDate))
+                .thenReturn(java.util.Optional.of(found));
+
+        assertThatThrownBy(() -> validator.validateNoDuplicate(priceListId, unitId, stayDate, null))
+                .isInstanceOf(BusinessRuleException.class);
     }
 }
 

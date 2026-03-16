@@ -58,7 +58,7 @@ public class PriceListService {
         PriceList priceList = findActivePriceList(publicId);
 
         validator.validateUpdate(
-                priceList.getId(), dto.name(), priceList.getName(),
+                priceList.getId(), priceList.getPublicId(), dto.name(), priceList.getName(),
                 dto.isDefault(), dto.parentPriceListPublicId()
         );
 
@@ -82,6 +82,7 @@ public class PriceListService {
         boolean isDefault = dto.isDefault() != null ? dto.isDefault() : priceList.isDefault();
         validator.validateUpdate(
                 priceList.getId(),
+                priceList.getPublicId(),
                 dto.name() != null ? dto.name() : priceList.getName(),
                 priceList.getName(),
                 isDefault,

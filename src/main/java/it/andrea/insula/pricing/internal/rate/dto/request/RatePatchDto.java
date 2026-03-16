@@ -1,17 +1,17 @@
 package it.andrea.insula.pricing.internal.rate.dto.request;
 
+import lombok.Builder;
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.Set;
 import java.util.UUID;
 
+@Builder
 public record RatePatchDto(
         UUID unitPublicId,
 
-        LocalDate startDate,
+        LocalDate stayDate,
 
-        LocalDate endDate,
+        UUID sourceSeasonPublicId,
 
         BigDecimal pricePerNight,
 
@@ -25,11 +25,7 @@ public record RatePatchDto(
 
         Boolean closedToArrival,
 
-        Boolean closedToDeparture,
-
-        Set<DayOfWeek> allowedCheckInDays,
-
-        Set<DayOfWeek> allowedCheckOutDays
+        Boolean closedToDeparture
 ) {
 }
 

@@ -17,5 +17,7 @@ public interface PriceListRepository extends JpaRepository<PriceList, Long>, Jpa
     boolean existsByIsDefaultTrue();
 
     boolean existsByIsDefaultTrueAndIdNot(Long id);
+
+    long countByParentPriceListPublicIdAndStatusNot(UUID parentPublicId, PriceListStatus status);
 }
 

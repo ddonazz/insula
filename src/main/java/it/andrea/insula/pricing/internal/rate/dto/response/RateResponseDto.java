@@ -5,7 +5,6 @@ import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Set;
 import java.util.UUID;
 
 @Builder
@@ -13,10 +12,11 @@ public record RateResponseDto(
         UUID publicId,
         UUID priceListPublicId,
         String priceListName,
+        UUID sourceSeasonPublicId,
+        String sourceSeasonName,
         UUID unitPublicId,
         UnitSummaryDto unit,
-        LocalDate startDate,
-        LocalDate endDate,
+        LocalDate stayDate,
         BigDecimal pricePerNight,
         BigDecimal extraGuestPrice,
         Integer minStay,
@@ -24,8 +24,7 @@ public record RateResponseDto(
         boolean stopSell,
         boolean closedToArrival,
         boolean closedToDeparture,
-        Set<TranslatedEnum> allowedCheckInDays,
-        Set<TranslatedEnum> allowedCheckOutDays
+        TranslatedEnum sourceSeasonType
 ) {
 
     @Builder

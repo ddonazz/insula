@@ -1,21 +1,19 @@
 package it.andrea.insula.pricing.internal.rate.mapper;
 
 import it.andrea.insula.pricing.internal.rate.dto.request.RateCreateDto;
-import it.andrea.insula.pricing.internal.rate.model.UnitRatePeriod;
+import it.andrea.insula.pricing.internal.rate.model.UnitRateDay;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.function.Function;
 
 @Component
-public class RateCreateMapper implements Function<RateCreateDto, UnitRatePeriod> {
+public class RateCreateMapper implements Function<RateCreateDto, UnitRateDay> {
 
     @Override
-    public UnitRatePeriod apply(RateCreateDto dto) {
-        UnitRatePeriod rate = new UnitRatePeriod();
+    public UnitRateDay apply(RateCreateDto dto) {
+        UnitRateDay rate = new UnitRateDay();
         rate.setUnitPublicId(dto.unitPublicId());
-        rate.setStartDate(dto.startDate());
-        rate.setEndDate(dto.endDate());
+        rate.setStayDate(dto.stayDate());
         rate.setPricePerNight(dto.pricePerNight());
         rate.setExtraGuestPrice(dto.extraGuestPrice());
         rate.setMinStay(dto.minStay());
@@ -23,8 +21,6 @@ public class RateCreateMapper implements Function<RateCreateDto, UnitRatePeriod>
         rate.setStopSell(dto.stopSell());
         rate.setClosedToArrival(dto.closedToArrival());
         rate.setClosedToDeparture(dto.closedToDeparture());
-        rate.setAllowedCheckInDays(dto.allowedCheckInDays() != null ? new HashSet<>(dto.allowedCheckInDays()) : new HashSet<>());
-        rate.setAllowedCheckOutDays(dto.allowedCheckOutDays() != null ? new HashSet<>(dto.allowedCheckOutDays()) : new HashSet<>());
         return rate;
     }
 }

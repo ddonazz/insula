@@ -8,11 +8,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum RateErrorCodes implements ErrorDefinition {
 
-    RATE_NOT_FOUND(60101, "rate.not.found", "Rate period not found with the provided identifier."),
-    RATE_DATES_INVALID(60102, "rate.dates.invalid", "The start date must be before the end date."),
-    RATE_UNIT_NOT_FOUND(60103, "rate.unit.not.found", "The referenced unit was not found."),
-    RATE_OVERLAP(60104, "rate.overlap", "A rate period already exists for this unit in the given date range within this price list."),
-    RATE_MIN_MAX_STAY_INVALID(60105, "rate.minstay.invalid", "The minimum stay must be less than or equal to the maximum stay.");
+    RATE_NOT_FOUND(4101, "rate.not.found", "Rate day not found."),
+    RATE_UNIT_NOT_FOUND(4102, "rate.unit.not.found", "Unit not found."),
+    RATE_SOURCE_SEASON_NOT_FOUND(4103, "rate.source.season.not.found", "Source season not found."),
+    RATE_MIN_MAX_STAY_INVALID(4104, "rate.minstay.invalid", "Minimum stay must be less than or equal to maximum stay."),
+    RATE_DUPLICATE_DAY(4105, "rate.duplicate.day", "A rate already exists for this unit and stay date.");
 
     private final int code;
     private final String errorCode;

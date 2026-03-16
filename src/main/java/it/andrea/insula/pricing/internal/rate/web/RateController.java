@@ -27,12 +27,12 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/price-lists/{priceListPublicId}/rates")
 @RequiredArgsConstructor
-@Tag(name = "Rate Management", description = "APIs for managing unit rate periods within a price list")
+@Tag(name = "Rates", description = "Manage daily unit rates")
 public class RateController {
 
     private final RateService service;
 
-    @Operation(summary = "Get a rate period by Public ID")
+    @Operation(summary = "Get rate by public ID")
     @GetMapping("/{ratePublicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.RATE_READ + "')")
     public ResponseEntity<RateResponseDto> getByPublicId(
@@ -42,18 +42,18 @@ public class RateController {
         return ResponseEntity.ok(service.getByPublicId(priceListPublicId, ratePublicId));
     }
 
-    @Operation(summary = "Get all rate periods for a price list (paginated)")
+    @Operation(summary = "Get rates (paged)")
     @GetMapping
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.RATE_READ + "')")
     public ResponseEntity<PageResponse<RateResponseDto>> getAll(
             @PathVariable UUID priceListPublicId,
             @ParameterObject RateSearchCriteria criteria,
-            @ParameterObject @PageableDefault(size = 20, sort = "startDate") Pageable pageable
+            @ParameterObject @PageableDefault(size = 20, sort = "stayDate") Pageable pageable
     ) {
         return ResponseEntity.ok(service.getAll(priceListPublicId, criteria, pageable));
     }
 
-    @Operation(summary = "Get all rate periods for a price list as a list")
+    @Operation(summary = "Get rates list")
     @GetMapping("/list")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.RATE_READ + "')")
     public ResponseEntity<List<RateResponseDto>> getList(
@@ -63,7 +63,7 @@ public class RateController {
         return ResponseEntity.ok(service.findAll(priceListPublicId, criteria));
     }
 
-    @Operation(summary = "Create a new rate period")
+    @Operation(summary = "Create rate")
     @PostMapping
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.RATE_CREATE + "')")
     public ResponseEntity<RateResponseDto> create(
@@ -78,7 +78,7 @@ public class RateController {
         return ResponseEntity.created(location).body(created);
     }
 
-    @Operation(summary = "Update an existing rate period")
+    @Operation(summary = "Update rate")
     @PutMapping("/{ratePublicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.RATE_UPDATE + "')")
     public ResponseEntity<RateResponseDto> update(
@@ -89,7 +89,7 @@ public class RateController {
         return ResponseEntity.ok(service.update(priceListPublicId, ratePublicId, dto));
     }
 
-    @Operation(summary = "Patch an existing rate period")
+    @Operation(summary = "Patch rate")
     @PatchMapping("/{ratePublicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.RATE_UPDATE + "')")
     public ResponseEntity<RateResponseDto> patch(
@@ -100,7 +100,7 @@ public class RateController {
         return ResponseEntity.ok(service.patch(priceListPublicId, ratePublicId, dto));
     }
 
-    @Operation(summary = "Delete a rate period")
+    @Operation(summary = "Delete rate")
     @DeleteMapping("/{ratePublicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.RATE_DELETE + "')")
     public ResponseEntity<Void> delete(

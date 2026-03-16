@@ -28,7 +28,7 @@ public class PriceListValidator {
         validateParentExists(parentPublicId);
     }
 
-    public void validateUpdate(Long id, String name, String originalName, boolean isDefault, UUID parentPublicId) {
+    public void validateUpdate(Long id, UUID currentPublicId, String name, String originalName, boolean isDefault, UUID parentPublicId) {
         if (name != null && !name.equals(originalName)) {
             if (priceListRepository.existsByNameAndIdNot(name, id)) {
                 throw new ResourceInUseException(PriceListErrorCodes.PRICELIST_NAME_IN_USE, name);
@@ -37,16 +37,19 @@ public class PriceListValidator {
         if (isDefault && priceListRepository.existsByIsDefaultTrueAndIdNot(id)) {
             throw new BusinessRuleException(PriceListErrorCodes.PRICELIST_DEFAULT_ALREADY_EXISTS);
         }
+        if (parentPublicId != null && parentPublicId.equals(currentPublicId)) {
+            throw new BusinessRuleException(PriceListErrorCodes.PRICELIST_PARENT_NOT_FOUND, parentPublicId);
+        }
         validateParentExists(parentPublicId);
     }
 
     public void validateDelete(PriceList priceList) {
-        if (!priceList.getDerivedPriceLists().isEmpty()) {
-            boolean hasActiveDerived = priceList.getDerivedPriceLists().stream()
-                    .anyMatch(d -> d.getStatus() != PriceListStatus.DELETED);
-            if (hasActiveDerived) {
-                throw new ResourceInUseException(PriceListErrorCodes.PRICELIST_HAS_DERIVED);
-            }
+        long activeDerived = priceListRepository.countByParentPriceListPublicIdAndStatusNot(
+                priceList.getPublicId(),
+                PriceListStatus.DELETED
+        );
+        if (activeDerived > 0) {
+            throw new ResourceInUseException(PriceListErrorCodes.PRICELIST_HAS_DERIVED);
         }
     }
 

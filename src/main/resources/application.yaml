@@ -1,3 +1,12 @@
+insula:
+  openapi:
+    title: "Insula API"
+    version: "1.0"
+    description: "Documentazione delle API per il progetto Insula"
+    contact:
+      name: "Andrea"
+      email: "andrea@insula.it"
+
 spring:
   application:
     name: insula
@@ -43,3 +52,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operations-sorter: method
+    persist-authorization: true
+    tags-sorter: alpha
+    default-models-expand-depth: -1

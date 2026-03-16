@@ -12,9 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -98,7 +96,7 @@ class PriceListValidatorTest {
 
     @Test
     void validateUpdate_shouldPassWhenNameUnchanged() {
-        assertThatCode(() -> validator.validateUpdate(1L, "Same Name", "Same Name", false, null))
+        assertThatCode(() -> validator.validateUpdate(1L, UUID.randomUUID(), "Same Name", "Same Name", false, null))
                 .doesNotThrowAnyException();
     }
 
@@ -106,7 +104,7 @@ class PriceListValidatorTest {
     void validateUpdate_shouldThrowWhenNewNameInUse() {
         when(priceListRepository.existsByNameAndIdNot("New Name", 1L)).thenReturn(true);
 
-        assertThatThrownBy(() -> validator.validateUpdate(1L, "New Name", "Old Name", false, null))
+        assertThatThrownBy(() -> validator.validateUpdate(1L, UUID.randomUUID(), "New Name", "Old Name", false, null))
                 .isInstanceOf(ResourceInUseException.class);
     }
 
@@ -114,7 +112,7 @@ class PriceListValidatorTest {
     void validateUpdate_shouldThrowWhenDefaultAlreadyExistsForOther() {
         when(priceListRepository.existsByIsDefaultTrueAndIdNot(1L)).thenReturn(true);
 
-        assertThatThrownBy(() -> validator.validateUpdate(1L, "Same", "Same", true, null))
+        assertThatThrownBy(() -> validator.validateUpdate(1L, UUID.randomUUID(), "Same", "Same", true, null))
                 .isInstanceOf(BusinessRuleException.class);
     }
 
@@ -123,7 +121,9 @@ class PriceListValidatorTest {
     @Test
     void validateDelete_shouldPassWhenNoDerivedPriceLists() {
         PriceList priceList = new PriceList();
-        priceList.setDerivedPriceLists(new HashSet<>());
+        UUID publicId = UUID.randomUUID();
+        priceList.setPublicId(publicId);
+        when(priceListRepository.countByParentPriceListPublicIdAndStatusNot(publicId, PriceListStatus.DELETED)).thenReturn(0L);
 
         assertThatCode(() -> validator.validateDelete(priceList))
                 .doesNotThrowAnyException();
@@ -131,11 +131,10 @@ class PriceListValidatorTest {
 
     @Test
     void validateDelete_shouldThrowWhenActiveDerivedExists() {
-        PriceList derived = new PriceList();
-        derived.setStatus(PriceListStatus.ACTIVE);
-
         PriceList priceList = new PriceList();
-        priceList.setDerivedPriceLists(Set.of(derived));
+        UUID publicId = UUID.randomUUID();
+        priceList.setPublicId(publicId);
+        when(priceListRepository.countByParentPriceListPublicIdAndStatusNot(publicId, PriceListStatus.DELETED)).thenReturn(1L);
 
         assertThatThrownBy(() -> validator.validateDelete(priceList))
                 .isInstanceOf(ResourceInUseException.class);
@@ -143,11 +142,10 @@ class PriceListValidatorTest {
 
     @Test
     void validateDelete_shouldPassWhenAllDerivedAreDeleted() {
-        PriceList derived = new PriceList();
-        derived.setStatus(PriceListStatus.DELETED);
-
         PriceList priceList = new PriceList();
-        priceList.setDerivedPriceLists(Set.of(derived));
+        UUID publicId = UUID.randomUUID();
+        priceList.setPublicId(publicId);
+        when(priceListRepository.countByParentPriceListPublicIdAndStatusNot(publicId, PriceListStatus.DELETED)).thenReturn(0L);
 
         assertThatCode(() -> validator.validateDelete(priceList))
                 .doesNotThrowAnyException();

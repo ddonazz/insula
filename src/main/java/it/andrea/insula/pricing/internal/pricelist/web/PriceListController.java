@@ -27,19 +27,19 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/price-lists")
 @RequiredArgsConstructor
-@Tag(name = "Price List Management", description = "APIs for managing price lists")
+@Tag(name = "Price Lists", description = "Manage price lists")
 public class PriceListController {
 
     private final PriceListService service;
 
-    @Operation(summary = "Get a price list by Public ID")
+    @Operation(summary = "Get price list by public ID")
     @GetMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PRICELIST_READ + "')")
     public ResponseEntity<PriceListResponseDto> getByPublicId(@PathVariable UUID publicId) {
         return ResponseEntity.ok(service.getByPublicId(publicId));
     }
 
-    @Operation(summary = "Get all price lists (paginated)")
+    @Operation(summary = "Get price lists (paged)")
     @GetMapping
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PRICELIST_READ + "')")
     public ResponseEntity<PageResponse<PriceListResponseDto>> getAll(
@@ -49,14 +49,14 @@ public class PriceListController {
         return ResponseEntity.ok(service.getAll(criteria, pageable));
     }
 
-    @Operation(summary = "Get all price lists as a list")
+    @Operation(summary = "Get price lists list")
     @GetMapping("/list")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PRICELIST_READ + "')")
     public ResponseEntity<List<PriceListResponseDto>> getList(@ParameterObject PriceListSearchCriteria criteria) {
         return ResponseEntity.ok(service.findAll(criteria));
     }
 
-    @Operation(summary = "Create a new price list")
+    @Operation(summary = "Create price list")
     @PostMapping
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PRICELIST_CREATE + "')")
     public ResponseEntity<PriceListResponseDto> create(@Validated @RequestBody PriceListCreateDto dto) {
@@ -68,21 +68,21 @@ public class PriceListController {
         return ResponseEntity.created(location).body(created);
     }
 
-    @Operation(summary = "Update an existing price list")
+    @Operation(summary = "Update price list")
     @PutMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PRICELIST_UPDATE + "')")
     public ResponseEntity<PriceListResponseDto> update(@PathVariable UUID publicId, @Validated @RequestBody PriceListUpdateDto dto) {
         return ResponseEntity.ok(service.update(publicId, dto));
     }
 
-    @Operation(summary = "Patch an existing price list")
+    @Operation(summary = "Patch price list")
     @PatchMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PRICELIST_UPDATE + "')")
     public ResponseEntity<PriceListResponseDto> patch(@PathVariable UUID publicId, @Validated @RequestBody PriceListPatchDto dto) {
         return ResponseEntity.ok(service.patch(publicId, dto));
     }
 
-    @Operation(summary = "Delete a price list (soft delete)")
+    @Operation(summary = "Delete price list")
     @DeleteMapping("/{publicId}")
     @PreAuthorize("hasAuthority('" + PermissionAuthority.Constants.PRICELIST_DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID publicId) {

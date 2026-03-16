@@ -4,7 +4,7 @@ import it.andrea.insula.core.dto.EnumTranslator;
 import it.andrea.insula.core.dto.TranslatedEnum;
 import it.andrea.insula.pricing.internal.pricelist.model.PriceList;
 import it.andrea.insula.pricing.internal.rate.dto.response.RateResponseDto;
-import it.andrea.insula.pricing.internal.rate.model.UnitRatePeriod;
+import it.andrea.insula.pricing.internal.rate.model.UnitRateDay;
 import it.andrea.insula.property.PropertyQueryService;
 import it.andrea.insula.property.UnitSummary;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,10 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +31,7 @@ class RateResponseMapperTest {
     private PropertyQueryService propertyQueryService;
 
     private RateResponseMapper mapper;
-    private UnitRatePeriod rate;
+    private UnitRateDay rate;
     private UUID unitPublicId;
     private UUID priceListPublicId;
 
@@ -48,12 +46,11 @@ class RateResponseMapperTest {
         priceList.setPublicId(priceListPublicId);
         priceList.setName("Summer 2025");
 
-        rate = new UnitRatePeriod();
+        rate = new UnitRateDay();
         rate.setPublicId(UUID.randomUUID());
         rate.setPriceList(priceList);
         rate.setUnitPublicId(unitPublicId);
-        rate.setStartDate(LocalDate.of(2025, 6, 1));
-        rate.setEndDate(LocalDate.of(2025, 8, 31));
+        rate.setStayDate(LocalDate.of(2025, 6, 1));
         rate.setPricePerNight(new BigDecimal("120.00"));
         rate.setExtraGuestPrice(new BigDecimal("25.00"));
         rate.setMinStay(2);
@@ -61,14 +58,10 @@ class RateResponseMapperTest {
         rate.setStopSell(false);
         rate.setClosedToArrival(true);
         rate.setClosedToDeparture(false);
-        rate.setAllowedCheckInDays(Set.of(DayOfWeek.SATURDAY));
-        rate.setAllowedCheckOutDays(Set.of(DayOfWeek.SATURDAY));
     }
 
     @Test
     void apply_shouldMapAllFields() {
-        TranslatedEnum saturday = new TranslatedEnum("SATURDAY", "Sabato");
-
         UnitSummary unitSummary = UnitSummary.builder()
                 .publicId(unitPublicId)
                 .propertyPublicId(UUID.randomUUID())
@@ -79,8 +72,8 @@ class RateResponseMapperTest {
                 .internalNumber("B")
                 .build();
 
-        when(enumTranslator.translateAll(Set.of(DayOfWeek.SATURDAY))).thenReturn(Set.of(saturday));
         when(propertyQueryService.findUnitByPublicId(unitPublicId)).thenReturn(Optional.of(unitSummary));
+        when(enumTranslator.translate(null)).thenReturn(null);
 
         RateResponseDto result = mapper.apply(rate);
 
@@ -88,8 +81,7 @@ class RateResponseMapperTest {
         assertThat(result.priceListPublicId()).isEqualTo(priceListPublicId);
         assertThat(result.priceListName()).isEqualTo("Summer 2025");
         assertThat(result.unitPublicId()).isEqualTo(unitPublicId);
-        assertThat(result.startDate()).isEqualTo(LocalDate.of(2025, 6, 1));
-        assertThat(result.endDate()).isEqualTo(LocalDate.of(2025, 8, 31));
+        assertThat(result.stayDate()).isEqualTo(LocalDate.of(2025, 6, 1));
         assertThat(result.pricePerNight()).isEqualByComparingTo("120.00");
         assertThat(result.extraGuestPrice()).isEqualByComparingTo("25.00");
         assertThat(result.minStay()).isEqualTo(2);
@@ -97,8 +89,6 @@ class RateResponseMapperTest {
         assertThat(result.stopSell()).isFalse();
         assertThat(result.closedToArrival()).isTrue();
         assertThat(result.closedToDeparture()).isFalse();
-        assertThat(result.allowedCheckInDays()).containsExactly(saturday);
-        assertThat(result.allowedCheckOutDays()).containsExactly(saturday);
         // Unit summary
         assertThat(result.unit()).isNotNull();
         assertThat(result.unit().internalName()).isEqualTo("App. 3B");
@@ -107,10 +97,8 @@ class RateResponseMapperTest {
 
     @Test
     void apply_shouldHandleUnitNotFound() {
-        TranslatedEnum saturday = new TranslatedEnum("SATURDAY", "Saturday");
-
-        when(enumTranslator.translateAll(Set.of(DayOfWeek.SATURDAY))).thenReturn(Set.of(saturday));
         when(propertyQueryService.findUnitByPublicId(unitPublicId)).thenReturn(Optional.empty());
+        when(enumTranslator.translate(null)).thenReturn(null);
 
         RateResponseDto result = mapper.apply(rate);
 
@@ -125,9 +113,8 @@ class RateResponseMapperTest {
         rate.setMinStay(null);
         rate.setMaxStay(null);
 
-        when(enumTranslator.translateAll(Set.of(DayOfWeek.SATURDAY)))
-                .thenReturn(Set.of(new TranslatedEnum("SATURDAY", "Saturday")));
         when(propertyQueryService.findUnitByPublicId(unitPublicId)).thenReturn(Optional.empty());
+        when(enumTranslator.translate(null)).thenReturn(new TranslatedEnum("NONE", "None"));
 
         RateResponseDto result = mapper.apply(rate);
 
