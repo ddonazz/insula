@@ -1,7 +1,6 @@
 package it.andrea.insula.pricing.internal.rate.mapper;
 
 import it.andrea.insula.core.dto.EnumTranslator;
-import it.andrea.insula.core.dto.TranslatedEnum;
 import it.andrea.insula.pricing.internal.pricelist.model.PriceList;
 import it.andrea.insula.pricing.internal.rate.dto.response.RateResponseDto;
 import it.andrea.insula.pricing.internal.rate.model.UnitRateDay;
@@ -73,7 +72,6 @@ class RateResponseMapperTest {
                 .build();
 
         when(propertyQueryService.findUnitByPublicId(unitPublicId)).thenReturn(Optional.of(unitSummary));
-        when(enumTranslator.translate(null)).thenReturn(null);
 
         RateResponseDto result = mapper.apply(rate);
 
@@ -98,7 +96,6 @@ class RateResponseMapperTest {
     @Test
     void apply_shouldHandleUnitNotFound() {
         when(propertyQueryService.findUnitByPublicId(unitPublicId)).thenReturn(Optional.empty());
-        when(enumTranslator.translate(null)).thenReturn(null);
 
         RateResponseDto result = mapper.apply(rate);
 
@@ -114,7 +111,6 @@ class RateResponseMapperTest {
         rate.setMaxStay(null);
 
         when(propertyQueryService.findUnitByPublicId(unitPublicId)).thenReturn(Optional.empty());
-        when(enumTranslator.translate(null)).thenReturn(new TranslatedEnum("NONE", "None"));
 
         RateResponseDto result = mapper.apply(rate);
 

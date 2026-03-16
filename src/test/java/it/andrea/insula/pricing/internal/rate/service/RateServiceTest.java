@@ -100,8 +100,6 @@ class RateServiceTest {
         );
 
         mockActivePriceList();
-        when(rateRepository.findByPriceListPublicIdAndUnitPublicIdAndStayDate(priceListPublicId, unitPublicId, dto.stayDate()))
-                .thenReturn(Optional.empty());
         when(createMapper.apply(dto)).thenReturn(rate);
         when(rateRepository.save(rate)).thenReturn(rate);
         when(responseMapper.apply(rate)).thenReturn(responseDto);
@@ -175,8 +173,6 @@ class RateServiceTest {
 
         mockActivePriceList();
         when(rateRepository.findByPublicId(ratePublicId)).thenReturn(Optional.of(rate));
-        when(rateRepository.findByPriceListPublicIdAndUnitPublicIdAndStayDate(priceListPublicId, unitPublicId, dto.stayDate()))
-                .thenReturn(Optional.empty());
         when(updateMapper.apply(dto, rate)).thenReturn(rate);
         when(rateRepository.save(rate)).thenReturn(rate);
         when(responseMapper.apply(rate)).thenReturn(responseDto);
@@ -213,8 +209,6 @@ class RateServiceTest {
 
         mockActivePriceList();
         when(rateRepository.findByPublicId(ratePublicId)).thenReturn(Optional.of(rate));
-        when(rateRepository.findByPriceListPublicIdAndUnitPublicIdAndStayDate(priceListPublicId, unitPublicId, rate.getStayDate()))
-                .thenReturn(Optional.of(rate));
         when(patchMapper.apply(dto, rate)).thenReturn(rate);
         when(rateRepository.save(rate)).thenReturn(rate);
         when(responseMapper.apply(rate)).thenReturn(responseDto);
